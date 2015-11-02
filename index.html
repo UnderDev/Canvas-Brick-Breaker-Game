@@ -29,6 +29,9 @@
         canvas.height = 600;
         canvas.width = 700;
 
+        var rects = [];
+        var keyState = {};
+        const BRICK_COUNT = 36;
 
 
         //Creating ball object
@@ -38,6 +41,7 @@
                 y: canvas.height / 2
             },
             ballCollisionLocation: 4,
+            ballSpeed:3,
             volocity: {
                 x: 1,
                 y: 1
@@ -83,21 +87,123 @@
             }
         }
 
+        //creating brick object
+        var Brick = {
+            height: 20,
+            width: 50,
+            hit: false,
+            position: { //position of first block
+                x: 20,
+                y: 40
+            },
+
+            Setup: function (x, y, hit, w, h) {
+                this.x = x;
+                this.y = y;
+                this.w = w;
+                this.h = h;
+                this.hit = hit;
+
+                this.draw = function () {
+                    ctx.beginPath();
+                    ctx.fillStyle = "rgb(100,0,0)";
+                    ctx.fillRect(x, y, w, h);
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+            }
+        }
+
+        paddle.createPaddle(); //Draw the paddle
+        ball.draw(); //Draw the ball
+        CreateBricks(); //Creates all the brick before the game starts
+        //Draws all the brick OBJS out to the screen
+        for (var i in rects) {
+            rects[i].draw();
+        }
+
+        //Creates all the brick objects each with there own properities in a rects[] array
+        function CreateBricks() {
+            for (var i = 0; i < BRICK_COUNT; i++) {
+                //setup all bricks to have x, y and hit valuse to false(not HIT)
+                rects[i] = new Brick.Setup(Brick.position.x, Brick.position.y, Brick.hit, Brick.width, Brick.height);
+                Brick.position.x += 55;
+
+                if (Brick.position.x + Brick.width >= canvas.width) {
+                    Brick.position.y += 30;
+                    Brick.position.x = 20;
+                }
+            }
+        }
+
+
 
         function playGame() {
             requestAnimationFrame(animate);
         }
-
 
         //ANIMATE THE GAME
         function animate(highResTimestamp) {
             // CLEARS THE BALL
             ctx.clearRect(ball.position.x - ball.radius - 1, ball.position.y - ball.radius - 1, ball.radius * 2 + 2, ball.radius * 2 + 2);
 
+
+
+            //Draw the remaining bricks in the array that arnt hit
+            for (var i in rects) {
+                if (rects[i].h == false)
+                    rects[i].draw();
+                else
+                    i++;
+            }
+
+
             ball.draw(); //creat the ball at new x/y pos
-            paddle.createPaddle();
+            paddle.createPaddle(); //create paddle so it dosnt disappear on collision
+
+
+
+
             requestAnimationFrame(animate); //repeat the animation
         }
+        
+        
+        
+        
+        // event listeners for key-up and key-down events
+        window.addEventListener('keydown', function (e) {
+            keyState[e.keyCode || e.which] = true;
+        }, true);
+        window.addEventListener('keyup', function (e) {
+            keyState[e.keyCode || e.which] = false;
+        }, true);
+
+        //used for creating smooth panning left and right for the paddle
+        function paddleLoop(highResTimestamp) {
+            ctx.clearRect(paddle.position.x, paddle.position.y, paddle.width, paddle.height);
+
+            if ((keyState[37] || keyState[65]) && paddle.position.x >= canvas.clientLeft) {
+                paddle.position.x -= paddle.speed;
+            }
+            if ((keyState[39] || keyState[68]) && paddle.position.x != canvas.width - paddle.width) {
+                paddle.position.x += paddle.speed;
+            }
+            paddle.createPaddle();
+
+            requestAnimationFrame(paddleLoop);
+        }
+        paddleLoop();
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     </script>
 
 </body>
