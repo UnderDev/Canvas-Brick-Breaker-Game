@@ -8,7 +8,9 @@
 
     <style type="text/css">
         canvas {
-            border: 2px solid;
+            background-image: url('bgImg.jpg');
+            border: 6px solid;
+            border-image: url("boarderImg.JPG") 30 30 round;
         }
     </style>
 
@@ -18,7 +20,7 @@
 
     <canvas id="Breakout"></canvas>
 
-    <button onclick="playGame()">Play</button>
+    <button id="playBtn" onclick="playGame()">Play</button>
 
     <script type="text/javascript">
         // Gets a handle to the element with id canvasOne.
@@ -33,12 +35,15 @@
         var keyState = {};
         const BRICK_COUNT = 36;
 
+        var playBtn = false;
+
+
         var score = 0,
             livesLeft = 3,
             bricksDestroyed = 0;
 
-        var bounceSound = new Audio("jumpSound.mp3"); //sound file
-
+        var bounceSound = new Audio("jumpSound.mp3"); //sound file 
+        var breakSound = new Audio("breakNoise.ogg"); //sound file
 
         //Creating ball object
         var ball = {
@@ -47,7 +52,7 @@
                 y: canvas.height / 2
             },
             ballCollisionLocation: 4,
-            ballSpeed: 3,
+            ballSpeed: 4,
             volocity: {
                 x: 1,
                 y: 1
@@ -82,7 +87,7 @@
 
             position: {
                 x: canvas.width / 2 - 50,
-                y: canvas.height - 20
+                y: canvas.height - 50
             },
             createPaddle: function () {
                 ctx.beginPath();
@@ -120,12 +125,21 @@
             }
         }
 
-        paddle.createPaddle(); //Draw the paddle
-        ball.draw(); //Draw the ball
-        CreateBricks(); //Creates all the brick before the game starts
-        //Draws all the brick OBJS out to the screen
-        for (var i in rects) {
-            rects[i].draw();
+
+        init();
+
+
+        //Hold all the biginning methods before the game starts
+        function init() {
+            scoreBoardBoarder();
+            paddle.createPaddle(); //Draw the paddle
+            ball.draw(); //Draw the ball
+            CreateBricks(); //Creates all the brick before the game starts
+
+            //Draws all the brick OBJS out to the screen
+            for (var i in rects) {
+                rects[i].draw();
+            }
         }
 
         //Creates all the brick objects each with there own properities in a rects[] array
@@ -142,8 +156,12 @@
             }
         }
 
+        //Used to strat the game via the button
         function playGame() {
-            requestAnimationFrame(animate);
+            if (playBtn == false) {
+                requestAnimationFrame(animate);
+                playBtn = true;    
+            }
         }
 
         //ANIMATE THE GAME
@@ -169,8 +187,8 @@
             ballBricksCollision();
             ballWallCollision();
 
-            //userScores();
-
+            checkWinLose();
+            displayScoreBoard();
             requestAnimationFrame(animate); //repeat the animation
         }
 
@@ -245,11 +263,6 @@
                 }
                 bounceSound.play();
             }
-            if ((ball.ballCollisionLocation != 1 || ball.ballCollisionLocation != 2 || ball.ballCollisionLocation != 3) && ball.position.y >= canvas.height) {
-                console.log("You lost a life");
-                livesLeft--;
-                resetGame();
-            }
         }
 
         //collision control for the ball hitting the wall
@@ -317,8 +330,11 @@
                 //if the ball hits the block anywhere
                 if ((ballsYBot >= rects[i].y) && (ballsYTop <= (rects[i].y + Brick.height)) && ((ballsXRight >= rects[i].x) && (ballsXLeft <= (rects[i].x + Brick.width)))) {
 
+                    breakSound.play(); //play breaking block sound
+
                     //The Block was HIT
                     rects[i].h = true;
+
                     //ADD 1 TO THE AMOUNT OF BRICKS DESTROYED
                     bricksDestroyed++;
 
@@ -450,16 +466,72 @@
         }
 
         //Reset the balls position and direction
-        function resetGame() {
+        function resetBallLoc() {
             ctx.clearRect(ball.position.x - ball.radius - 1, ball.position.y - ball.radius - 1, ball.radius * 2 + 2, ball.radius * 2 + 2);
             ball.position.x = canvas.width / 2;
             ball.position.y = canvas.height / 2;
-            ball.ballCollisionLocation = 4;
+
+            if (playBtn) {
+                ball.ballCollisionLocation = 4;
+            }
 
         }
 
 
-        // event listeners for key-up and key-down events
+        //Display the scores/lives left on-screen
+        function displayScoreBoard() {
+
+            scoreBoardBoarder();
+
+            //Set the text font and color
+            ctx.fillStyle = 'rgb(50,150,50)';
+            ctx.font = "25px Times New Roman";
+
+            //Clear the bottom 30 pixels of the canvas
+            ctx.clearRect(0, canvas.height - 30, canvas.width, 30);
+            // Display Text 5 pixels from the bottom of the canvas
+            ctx.fillText('Score: ' + bricksDestroyed + "                                                                           LivesLeft: " + livesLeft, 10, canvas.height - 5);
+
+        }
+
+        function checkWinLose() {
+            if ((ball.ballCollisionLocation != 1 || ball.ballCollisionLocation != 2 || ball.ballCollisionLocation != 3) && ball.position.y >= canvas.height - 20) {
+                alert("LIFE LOST Click Ok to continue");
+
+                livesLeft--;
+                resetBallLoc();
+            }
+
+            if (livesLeft == 0) {
+                alert("Game Over!!");
+                livesLeft = 3;
+                ball.ballCollisionLocation = 10;
+                playBtn=false;
+            }
+
+            if (bricksDestroyed == BRICK_COUNT) {
+                console.log("YOU WIN!");
+                ball.ballCollisionLocation = 10;
+                playBtn=false;
+            }
+            
+        }
+
+
+        //creates a boarder at the bottom on screen
+        function scoreBoardBoarder() {
+            //creates the boarder on the scoreboard
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - 32);
+            ctx.lineTo(canvas.width, canvas.height - 32);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#808080';
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+
+        //Event listeners for key-up and key-down events
         window.addEventListener('keydown', function (e) {
             keyState[e.keyCode || e.which] = true;
         }, true);
