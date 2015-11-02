@@ -18,6 +18,8 @@
 
     <canvas id="Breakout"></canvas>
 
+    <button onclick="playGame()">Play</button>
+
     <script type="text/javascript">
         // Gets a handle to the element with id canvasOne.
         var canvas = document.getElementById("Breakout");
@@ -26,8 +28,76 @@
 
         canvas.height = 600;
         canvas.width = 700;
-              
-        
+
+
+
+        //Creating ball object
+        var ball = {
+            position: {
+                x: canvas.width / 2,
+                y: canvas.height / 2
+            },
+            ballCollisionLocation: 4,
+            volocity: {
+                x: 1,
+                y: 1
+            },
+            acceleration: {
+                x: 0.1,
+                y: 0.2
+            },
+            radius: 10,
+            padddleCollision: false,
+
+            draw: function () {
+                ctx.beginPath();
+                ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
+                ctx.fillStyle = "rgb(0,0,255)";
+                ctx.fill();
+                ctx.closePath();
+            },
+            move: function () {
+                this.position.x += this.volocity.x;
+                this.position.y += this.volocity.y;
+                this.volocity.x += this.acceleration.x;
+                this.volocity.y += this.acceleration.y;
+            }
+        }
+
+        //Creating paddle object
+        var paddle = {
+            height: 10,
+            width: 100,
+            speed: 10, //Affects where the paddls boundries are *** FIX **
+
+            position: {
+                x: canvas.width / 2 - 50,
+                y: canvas.height - 20
+            },
+            createPaddle: function () {
+                ctx.beginPath();
+                ctx.fillStyle = "rgb(0,0,100)";;
+                ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+                ctx.stroke();
+                ctx.closePath();
+            }
+        }
+
+
+        function playGame() {
+            requestAnimationFrame(animate);
+        }
+
+
+        //ANIMATE THE GAME
+        function animate(highResTimestamp) {
+            // CLEARS THE BALL
+            ctx.clearRect(ball.position.x - ball.radius - 1, ball.position.y - ball.radius - 1, ball.radius * 2 + 2, ball.radius * 2 + 2);
+
+            ball.draw(); //creat the ball at new x/y pos
+            paddle.createPaddle();
+            requestAnimationFrame(animate); //repeat the animation
+        }
     </script>
 
 </body>
