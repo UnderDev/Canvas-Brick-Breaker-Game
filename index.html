@@ -31,6 +31,7 @@
         canvas.height = 600;
         canvas.width = 700;
 
+        
         var rects = [];
         var keyState = {};
         const BRICK_COUNT = 36;
@@ -160,7 +161,7 @@
         function playGame() {
             if (playBtn == false) {
                 requestAnimationFrame(animate);
-                playBtn = true;    
+                playBtn = true;
             }
         }
 
@@ -339,7 +340,7 @@
                     bricksDestroyed++;
 
                     //if ball hit Bottom of the brick
-                    if (ballsYTop <= rects[i].y + Brick.height && ballsYBot >= rects[i].y + Brick.height && ball.position.y > rects[i].y + Brick.height) {
+                    if (ballsYBot >= rects[i].y + Brick.height && ballsYTop <= rects[i].y + Brick.height && ball.position.y > rects[i].y + Brick.height) {
                         console.log("Ball Hit Bottom Of Brick");
                         topBrickCondition = true;
 
@@ -404,7 +405,7 @@
                     }
 
                     //if ball hit Left of the brick
-                    if (ballsXRight >= rects[i].x && ballsXLeft <= rects[i].x && ball.position.y >= rects[i].y && ball.position.y <= rects[i].y + Brick.height) {
+                    if (ballsXRight >= rects[i].x && ballsXLeft <= rects[i].x && ball.position.y >= rects[i].y && ball.position.y <= rects[i].y + (Brick.height + 2)) {
                         console.log("Ball Hit Left Of Brick");
 
                         //Ball hit brick after left wall going up
@@ -418,7 +419,7 @@
                     }
 
                     //if ball hit Right of brick
-                    if (ballsXLeft <= rects[i].x + Brick.width && ballsXRight >= rects[i].x + Brick.width && ball.position.y >= rects[i].y && ball.position.y <= rects[i].y + Brick.height) {
+                    if (ballsXLeft <= rects[i].x + Brick.width && ballsXRight >= rects[i].x + Brick.width && ball.position.y >= rects[i].y && ball.position.y <= rects[i].y + (Brick.height + 2)) {
                         console.log("Ball Hit Right Of Brick");
 
 
@@ -477,7 +478,6 @@
 
         }
 
-
         //Display the scores/lives left on-screen
         function displayScoreBoard() {
 
@@ -494,10 +494,10 @@
 
         }
 
+        //Check if the game was won/lost or a life was lost
         function checkWinLose() {
             if ((ball.ballCollisionLocation != 1 || ball.ballCollisionLocation != 2 || ball.ballCollisionLocation != 3) && ball.position.y >= canvas.height - 20) {
                 alert("LIFE LOST Click Ok to continue");
-
                 livesLeft--;
                 resetBallLoc();
             }
@@ -506,17 +506,16 @@
                 alert("Game Over!!");
                 livesLeft = 3;
                 ball.ballCollisionLocation = 10;
-                playBtn=false;
+                playBtn = false;
             }
 
             if (bricksDestroyed == BRICK_COUNT) {
-                console.log("YOU WIN!");
+                alert("Game Over!!");
                 ball.ballCollisionLocation = 10;
-                playBtn=false;
+                playBtn = false;
             }
-            
-        }
 
+        }
 
         //creates a boarder at the bottom on screen
         function scoreBoardBoarder() {
