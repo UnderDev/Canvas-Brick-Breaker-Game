@@ -41,7 +41,7 @@
                 y: canvas.height / 2
             },
             ballCollisionLocation: 4,
-            ballSpeed:3,
+            ballSpeed: 3,
             volocity: {
                 x: 1,
                 y: 1
@@ -136,8 +136,6 @@
             }
         }
 
-
-
         function playGame() {
             requestAnimationFrame(animate);
         }
@@ -148,7 +146,6 @@
             ctx.clearRect(ball.position.x - ball.radius - 1, ball.position.y - ball.radius - 1, ball.radius * 2 + 2, ball.radius * 2 + 2);
 
 
-
             //Draw the remaining bricks in the array that arnt hit
             for (var i in rects) {
                 if (rects[i].h == false)
@@ -157,19 +154,147 @@
                     i++;
             }
 
-
+            moveBall(); //move the balls x/y pos
             ball.draw(); //creat the ball at new x/y pos
             paddle.createPaddle(); //create paddle so it dosnt disappear on collision
 
+            ballPaddleCollision();
+
+            ballWallCollision();
 
 
 
             requestAnimationFrame(animate); //repeat the animation
         }
-        
-        
-        
-        
+
+        //Moves the ball based on the collision number
+        function moveBall() {
+            //switch on the ballCollisionLocation (int) to see if ball goes left/right/mid
+            switch (ball.ballCollisionLocation) {
+                //paddle collision 1 - 3
+            case 1: //ball hit the left of the paddle
+                ball.position.x -= ball.ballSpeed;
+                ball.position.y -= ball.ballSpeed;
+                break;
+            case 2: //send ball up
+                ball.position.y -= ball.ballSpeed
+                break;
+            case 3: //ball hit the right of the paddle
+
+                ball.position.x += ball.ballSpeed;
+                ball.position.y -= ball.ballSpeed;
+                break;
+
+                //wall collision with ball
+            case 4: //send ball down
+                ball.position.y += ball.ballSpeed;
+                break;
+
+            case 5: //send ball left and up
+                ball.position.x -= ball.ballSpeed;
+                ball.position.y -= ball.ballSpeed;
+                break;
+            case 6: //send ball right and up
+                ball.position.x += ball.ballSpeed;
+                ball.position.y -= ball.ballSpeed;
+                break;
+
+            case 7: //send ball left and down
+                ball.position.x -= ball.ballSpeed;
+                ball.position.y += ball.ballSpeed;
+                break;
+            case 8: //send ball right and down
+                ball.position.x += ball.ballSpeed;
+                ball.position.y += ball.ballSpeed;
+                break;
+            case 9: //send ball right and down
+                ball.position.x += ball.ballSpeed;
+                ball.position.y += ball.ballSpeed;
+                break;
+            }
+            console.log(ball.ballCollisionLocation);
+        }
+
+        //BALL HIT OFF PADDLE DIRECTION CONTROL
+        function ballPaddleCollision() {
+            //if the ball hits the paddle anywhere
+            if (ball.position.y + ball.radius >= paddle.position.y && ball.position.x >= paddle.position.x && ball.position.x <= paddle.position.x + paddle.width) {
+                console.log("Ball hit the Paddle");
+
+                //if the ball hits the Left of the paddle
+                if ((ball.position.x <= paddle.position.x + paddle.width / 3)) {
+                    ball.ballCollisionLocation = 1;
+                }
+
+                //if the ball hits the Center of the paddle
+                else if ((ball.position.x <= paddle.position.x + paddle.width - 30)) {
+                    ball.ballCollisionLocation = 2;
+                }
+
+                //if the ball hits the Right of the paddle
+                else if ((ball.position.x <= paddle.position.x + paddle.width)) {
+
+                    ball.ballCollisionLocation = 3;
+                }
+
+            }
+            if ((ball.ballCollisionLocation != 1 || ball.ballCollisionLocation != 2 || ball.ballCollisionLocation != 3) && ball.position.y >= canvas.height) {
+                console.log("You lost a life");
+                livesLeft--;
+                resetGame();
+            }
+        }
+
+        //collision control for the ball hitting the wall
+        function ballWallCollision() {
+
+            //Did the ball hit the wall
+            if (ball.position.y - ball.radius <= canvas.clientTop || ball.position.x + ball.radius >= canvas.width || ball.position.x - ball.radius <= canvas.clientLeft) {
+                console.log("Ball Hit A Wall");
+
+                //if the ball hit the left wall
+                if (ball.position.x - ball.radius <= canvas.clientLeft) {
+                    console.log("Ball Hit left Wall");
+                    if (ball.ballCollisionLocation == 5 || ball.ballCollisionLocation == 1) {
+                        ball.ballCollisionLocation = 6; //ball right and up
+                    } else if (ball.ballCollisionLocation == 7) {
+                        ball.ballCollisionLocation = 8; //ball down and right   
+                    }
+                }
+
+                //if the ball hit the right wall
+                if (ball.position.x + ball.radius >= canvas.width) {
+                    console.log("Ball Hit right Wall");
+                    if (ball.ballCollisionLocation == 3 || ball.ballCollisionLocation == 6) {
+                        ball.ballCollisionLocation = 5;
+                    } else if (ball.ballCollisionLocation == 8 || ball.ballCollisionLocation == 9) {
+                        ball.ballCollisionLocation = 7;
+                    }
+                }
+
+                //if the ball hit the Roof wall
+                if (ball.position.y - ball.radius <= canvas.clientTop) {
+
+                    //Find where the ball hit the roof from 
+                    if (ball.ballCollisionLocation == 2) {
+                        ball.ballCollisionLocation = 4; //ball come down
+                    }
+                    //
+                    else if ((ball.ballCollisionLocation == 5) || (ball.ballCollisionLocation == 1)) {
+                        ball.ballCollisionLocation = 7;
+
+                    }
+                    //
+                    else if ((ball.ballCollisionLocation == 6) || (ball.ballCollisionLocation == 3)) {
+                        ball.ballCollisionLocation = 9;
+
+                    }
+                }
+            }
+        }
+
+
+
         // event listeners for key-up and key-down events
         window.addEventListener('keydown', function (e) {
             keyState[e.keyCode || e.which] = true;
@@ -193,17 +318,6 @@
             requestAnimationFrame(paddleLoop);
         }
         paddleLoop();
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
     </script>
 
 </body>
