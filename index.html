@@ -33,6 +33,12 @@
         var keyState = {};
         const BRICK_COUNT = 36;
 
+        var score = 0,
+            livesLeft = 3,
+            bricksDestroyed = 0;
+
+        var bounceSound = new Audio("jumpSound.mp3"); //sound file
+
 
         //Creating ball object
         var ball = {
@@ -145,6 +151,7 @@
             // CLEARS THE BALL
             ctx.clearRect(ball.position.x - ball.radius - 1, ball.position.y - ball.radius - 1, ball.radius * 2 + 2, ball.radius * 2 + 2);
 
+            ballBricksCollision();
 
             //Draw the remaining bricks in the array that arnt hit
             for (var i in rects) {
@@ -159,10 +166,10 @@
             paddle.createPaddle(); //create paddle so it dosnt disappear on collision
 
             ballPaddleCollision();
-
+            ballBricksCollision();
             ballWallCollision();
 
-
+            //userScores();
 
             requestAnimationFrame(animate); //repeat the animation
         }
@@ -236,7 +243,7 @@
 
                     ball.ballCollisionLocation = 3;
                 }
-
+                bounceSound.play();
             }
             if ((ball.ballCollisionLocation != 1 || ball.ballCollisionLocation != 2 || ball.ballCollisionLocation != 3) && ball.position.y >= canvas.height) {
                 console.log("You lost a life");
@@ -293,6 +300,163 @@
             }
         }
 
+        //Check for a collision on the bricks
+        function ballBricksCollision() {
+
+            var ballsXLeft = ball.position.x - ball.radius;
+            var ballsXRight = ball.position.x + ball.radius;
+
+            var ballsYTop = ball.position.y - ball.radius;
+            var ballsYBot = ball.position.y + ball.radius;
+
+            var topBrickCondition = false;
+            var botBrickCondition = false;
+
+            //for loop cheacking over number of bricks in array
+            for (var i in rects) {
+                //if the ball hits the block anywhere
+                if ((ballsYBot >= rects[i].y) && (ballsYTop <= (rects[i].y + Brick.height)) && ((ballsXRight >= rects[i].x) && (ballsXLeft <= (rects[i].x + Brick.width)))) {
+
+                    //The Block was HIT
+                    rects[i].h = true;
+                    //ADD 1 TO THE AMOUNT OF BRICKS DESTROYED
+                    bricksDestroyed++;
+
+                    //if ball hit Bottom of the brick
+                    if (ballsYTop <= rects[i].y + Brick.height && ballsYBot >= rects[i].y + Brick.height && ball.position.y > rects[i].y + Brick.height) {
+                        console.log("Ball Hit Bottom Of Brick");
+                        topBrickCondition = true;
+
+                        //if the ball hit the bottom of the brick after right wall or left paddle
+                        if (ball.ballCollisionLocation == 5 || ball.ballCollisionLocation == 1) {
+                            ball.ballCollisionLocation = 7;
+                        }
+                        //if the ball hit the bottom of the brick after left wall or right paddle
+                        else if (ball.ballCollisionLocation == 6 || ball.ballCollisionLocation == 3) {
+                            ball.ballCollisionLocation = 8;
+                        }
+                        //if ball hits the middle of the 2 bricks 
+                        else if ((ball.ballCollisionLocation == 2 || ball.ballCollisionLocation == 5 || ball.ballCollisionLocation == 1 || ball.ballCollisionLocation == 6 || ball.ballCollisionLocation == 3) && (ball.position.x >= rects[i].x + Brick.width && ballsXLeft <= rects[i].x + Brick.width || ball.position.x <= rects[i].x && ballsXRight >= rects[i].x)) {
+
+                            var number = Math.floor(Math.random() * (10 - 1)) + 1;
+                            //if the ball was from the bottom
+                            console.log("Ball Hit bottom of the brick Right + left " + number);
+                            if (number > 5)
+                                ball.ballCollisionLocation = 8;
+                            else
+                                ball.ballCollisionLocation = 7;
+                        }
+                        // ball hit mid
+                        else if (ball.ballCollisionLocation == 2) {
+                            ball.ballCollisionLocation = 4;
+                            //console.log("Hit Block straight on, Going DOWN");
+                        }
+                    }
+
+                    //if ball hit Top of brick
+                    if (ballsYBot >= rects[i].y && ballsYTop <= rects[i].y && ball.position.y < rects[i].y) {
+                        console.log("Ball Hit Top Of Brick");
+
+                        botBrickCondition = true;
+
+                        //if the ball hit the top of the brick after left wall and Roof
+                        if (ball.ballCollisionLocation == 8 || ball.ballCollisionLocation == 9) {
+                            ball.ballCollisionLocation = 6;
+                        }
+                        //if ball hits the middle of the 2 bricks on top
+                        else if ((ball.ballCollisionLocation == 8 || ball.ballCollisionLocation == 9 || ball.ballCollisionLocation == 7) && (ball.position.x >= rects[i].x + Brick.width && ballsXLeft <= rects[i].x + Brick.width || ball.position.x <= rects[i].x && ballsXRight >= rects[i].x)) {
+
+                            var number = Math.floor(Math.random() * (10 - 1)) + 1;
+                            //if the ball was from the top
+
+                            console.log("Ball Hit top of the brick Right + left" + number);
+                            if (number > 5)
+                                ball.ballCollisionLocation = 5;
+                            else
+                                ball.ballCollisionLocation = 6;
+
+
+                        }
+
+
+                        //if the ball hit the Top of the brick after right wall or Roof
+                        else if (ball.ballCollisionLocation == 7) {
+                            ball.ballCollisionLocation = 5;
+                        }
+                        //if the ball hit the bottom of the brick after top of brick
+                        //else if(){} 
+                    }
+
+                    //if ball hit Left of the brick
+                    if (ballsXRight >= rects[i].x && ballsXLeft <= rects[i].x && ball.position.y >= rects[i].y && ball.position.y <= rects[i].y + Brick.height) {
+                        console.log("Ball Hit Left Of Brick");
+
+                        //Ball hit brick after left wall going up
+                        if (ball.ballCollisionLocation == 6 || ball.ballCollisionLocation == 3) {
+                            ball.ballCollisionLocation = 5;
+                        }
+                        //Ball hit Brick after left wall going down
+                        else if (ball.ballCollisionLocation == 8 || ball.ballCollisionLocation == 9) {
+                            ball.ballCollisionLocation = 7;
+                        }
+                    }
+
+                    //if ball hit Right of brick
+                    if (ballsXLeft <= rects[i].x + Brick.width && ballsXRight >= rects[i].x + Brick.width && ball.position.y >= rects[i].y && ball.position.y <= rects[i].y + Brick.height) {
+                        console.log("Ball Hit Right Of Brick");
+
+
+                        //Ball hit brick after Right wall going up
+                        if (ball.ballCollisionLocation == 5 || ball.ballCollisionLocation == 1) {
+                            ball.ballCollisionLocation = 6;
+                        }
+                        //Ball hit Brick after Right wall going down
+                        else if (ball.ballCollisionLocation == 7) {
+                            ball.ballCollisionLocation = 8;
+                        }
+
+                    }
+
+                    //Clears the image of the brick from the canvas
+                    ctx.clearRect(rects[i].x, rects[i].y, Brick.width, Brick.height);
+                    rects.splice(i, 1); //Removes that block in the array
+
+                    //console.log("Block Hit! " + rects.length + " Remaining");
+                }
+                //if the ball hits top and bottom of brick at the same time, go in random direction
+                if (topBrickCondition == true && botBrickCondition == true) {
+                    var number = Math.floor((Math.random() * 10) + 1);
+
+                    //if the ball was from the left
+                    if (ball.ballCollisionLocation == 8 || ball.ballCollisionLocation == 6) {
+                        console.log("Ball Hit left brick top and bottom");
+                        if (number > 5)
+                            ball.ballCollisionLocation = 5;
+                        else
+                            ball.ballCollisionLocation = 7;
+
+                    }
+                    //else its from the right
+                    else {
+                        console.log("Ball Hit right brick top and bottom");
+                        if (number > 5)
+                            ball.ballCollisionLocation = 6;
+                        else
+                            ball.ballCollisionLocation = 8;
+
+                    }
+                }
+            }
+        }
+
+        //Reset the balls position and direction
+        function resetGame() {
+            ctx.clearRect(ball.position.x - ball.radius - 1, ball.position.y - ball.radius - 1, ball.radius * 2 + 2, ball.radius * 2 + 2);
+            ball.position.x = canvas.width / 2;
+            ball.position.y = canvas.height / 2;
+            ball.ballCollisionLocation = 4;
+
+        }
 
 
         // event listeners for key-up and key-down events
