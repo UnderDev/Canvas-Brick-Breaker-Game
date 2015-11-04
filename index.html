@@ -8,9 +8,9 @@
 
     <style type="text/css">
         canvas {
-            background-image: url('Images\bgImg.jpg');
+            background-image: url('bgImg.jpg');
             border: 6px solid;
-            border-image: url("Images\boarderImg.JPG") 30 30 round;
+            border-image: url("boarderImg.JPG") 30 30 round;
         }
     </style>
 </head>
@@ -40,11 +40,11 @@
         var canvasBoarder = 150;
 
         //sound files
-        var bounceSound = new Audio("SoundClips\jumpSound.mp3"),
-            breakSound = new Audio("SoundClips\breakNoise.ogg"),
-            winGameSound = new Audio("SoundClips\winGameSound.wav"),
-            loseGameSound = new Audio("SoundClips\loseGameSound.wav"),
-            lifeLost = new Audio("SoundClips\lifeLost.wav");
+        var bounceSound = new Audio("jumpSound.mp3"),
+            breakSound = new Audio("breakNoise.ogg"),
+            winGameSound = new Audio("winGameSound.wav"),
+            loseGameSound = new Audio("loseGameSound.wav"),
+            lifeLost = new Audio("lifeLost.wav");
 
         //Event listeners for key-up and key-down events
         window.addEventListener('keydown', function (e) {
@@ -157,7 +157,7 @@
                 //Load the logo and draw it to screen
                 this.draw = function () {
                     brickImg = new Image();
-                    brickImg.src = 'Images\brickImage.png';
+                    brickImg.src = 'brickImage.png';
                     brickImg.onload = function () {
                         ctx.drawImage(brickImg, x, y);
                     }
