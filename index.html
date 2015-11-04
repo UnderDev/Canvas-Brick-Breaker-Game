@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Canvas</title>
+    <title>Brick Breaker</title>
 
     <style type="text/css">
         canvas {
@@ -19,9 +19,6 @@
 <body>
 
     <canvas id="Breakout"></canvas>
-
-    <button id="playBtn" onclick="playGame()">Play</button>
-
     <script type="text/javascript">
         // Gets a handle to the element with id canvasOne.
         var canvas = document.getElementById("Breakout");
@@ -31,61 +28,56 @@
         canvas.height = 600;
         canvas.width = 700;
 
-
         var rects = [];
         var keyState = {};
         const BRICK_COUNT = 36;
 
-        var playBtn = false;
-        var gameOver = false;
+        var gameStarted = false,
+            gameOver = false;
 
         var score = 0,
             livesLeft = 3,
             bricksDestroyed = 0;
 
-        var bounceSound = new Audio("jumpSound.mp3"); //sound file 
-        var breakSound = new Audio("breakNoise.ogg"); //sound file
+        //sound files
+        var bounceSound = new Audio("jumpSound.mp3"),
+            breakSound = new Audio("breakNoise.ogg"),
+            winGameSound = new Audio("winGameSound.wav"),
+            loseGameSound = new Audio("loseGameSound.wav"),
+            lifeLost = new Audio("lifeLost.wav");
 
-        /* var img = new Image();
-         img.src = 'https://mdn.mozillademos.org/files/222/Canvas_createpattern.png';
-         img.onload = function () {
-             var pattern = ctx.createPattern(img, 'repeat');
-             ctx.fillStyle = pattern;
-             ctx.fillRect(0, 0, 400, 400);
-         };*/
+        //Event listeners for key-up and key-down events
+        window.addEventListener('keydown', function (e) {
+            keyState[e.keyCode || e.which] = true;
 
+            if (keyState[13] && gameStarted == false) {
+                console.log("ENTER GAME")
+                ctx.clearRect(100, 200, canvas.width, 500);
+                playGame();
+            }
+        }, true);
+        window.addEventListener('keyup', function (e) {
+            keyState[e.keyCode || e.which] = false;
+        }, true);
 
         //Creating ball object
         var ball = {
             position: {
-                x: canvas.width / 2,
+                x: canvas.width / 2 + 10,
                 y: canvas.height / 2
             },
             ballCollisionLocation: 4,
             ballSpeed: 4,
-            volocity: {
-                x: 1,
-                y: 1
-            },
-            acceleration: {
-                x: 0.1,
-                y: 0.2
-            },
             radius: 10,
             padddleCollision: false,
 
             draw: function () {
                 ctx.beginPath();
                 ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
-                ctx.fillStyle = "rgb(0,0,255)";
+                ctx.stroke();
+                ctx.fillStyle = "rgb(255,255,255)";
                 ctx.fill();
                 ctx.closePath();
-            },
-            move: function () {
-                this.position.x += this.volocity.x;
-                this.position.y += this.volocity.y;
-                this.volocity.x += this.acceleration.x;
-                this.volocity.y += this.acceleration.y;
             }
         }
 
@@ -93,17 +85,30 @@
         var paddle = {
             height: 10,
             width: 100,
-            speed: 10, //Affects where the paddls boundries are *** FIX **
-
+            speed: 10, //Affects where the paddls boundries are
+            radius: 8,
             position: {
                 x: canvas.width / 2 - 50,
                 y: canvas.height - 50
             },
             createPaddle: function () {
                 ctx.beginPath();
-                ctx.fillStyle = "rgb(0,0,100)";;
-                ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+                ctx.fillStyle = "rgb(0,0,100)";
+                ctx.moveTo(this.position.x, this.position.y + this.radius);
+                ctx.lineTo(this.position.x, this.position.y + this.height - this.radius);
+                ctx.quadraticCurveTo(this.position.x, this.position.y + this.height, this.position.x + this.radius, this.position.y + this.height);
+
+                ctx.lineTo(this.position.x + this.width - this.radius, this.position.y + this.height);
+                ctx.quadraticCurveTo(this.position.x + this.width, this.position.y + this.height, this.position.x + this.width, this.position.y + this.height - this.radius);
+
+                ctx.lineTo(this.position.x + this.width, this.position.y + this.radius);
+                ctx.quadraticCurveTo(this.position.x + this.width, this.position.y, this.position.x + this.width - this.radius, this.position.y);
+
+                ctx.lineTo(this.position.x + this.radius, this.position.y);
+                ctx.quadraticCurveTo(this.position.x, this.position.y, this.position.x, this.position.y + this.radius);
+
                 ctx.stroke();
+                ctx.fill();
                 ctx.closePath();
             }
         }
@@ -113,6 +118,8 @@
             height: 20,
             width: 50,
             hit: false,
+            radius: 10,
+            color: 0,
             position: { //position of first block
                 x: 20,
                 y: 40
@@ -127,17 +134,33 @@
 
                 this.draw = function () {
                     ctx.beginPath();
-                    ctx.fillStyle = "rgb(100,0,0)";
-                    ctx.fillRect(x, y, w, h);
-                    ctx.stroke();
+
+                    if (Brick.color % 2 == 0)
+                        ctx.fillStyle = "brown";
+
+                    else
+                        ctx.fillStyle = "green";
+
+                    ctx.moveTo(x, y + Brick.radius);
+                    ctx.lineTo(x, y + h - Brick.radius);
+                    ctx.quadraticCurveTo(x, y + h, x + Brick.radius, y + h);
+
+                    ctx.lineTo(x + w - Brick.radius, y + h);
+                    ctx.quadraticCurveTo(x + w, y + h, x + w, y + h - Brick.radius);
+
+                    ctx.lineTo(x + w, y + Brick.radius);
+                    ctx.quadraticCurveTo(x + w, y, x + w - Brick.radius, y);
+
+                    ctx.lineTo(x + Brick.radius, y);
+                    ctx.quadraticCurveTo(x, y, x, y + Brick.radius);
+                    ctx.fill();
                     ctx.closePath();
+                    Brick.color++;
                 }
             }
         }
 
-
         init();
-
 
         //Hold all the biginning methods before the game starts
         function init() {
@@ -145,6 +168,9 @@
             paddle.createPaddle(); //Draw the paddle
             ball.draw(); //Draw the ball
             createBricks(); //Creates all the brick before the game starts
+
+            if (gameStarted == false)
+                gameText();
 
             //Draws all the brick OBJS out to the screen
             for (var i in rects) {
@@ -168,17 +194,15 @@
 
         //Used to strat the game via the button
         function playGame() {
-            if (playBtn == false) {
-                requestAnimationFrame(animate); //animates the game
-                playBtn = true; //prevents the user hiting play multiple times
-                gameOver = false; //stops the request animation from triggering after game
-            }
+            requestAnimationFrame(animate); //animates the game
+            gameStarted = true; //prevents the user hiting play multiple times
+            gameOver = false; //stops the request animation from triggering after game
         }
 
         //ANIMATE THE GAME
         function animate(highResTimestamp) {
             // CLEARS THE BALL
-            ctx.clearRect(ball.position.x - ball.radius - 1, ball.position.y - ball.radius - 1, ball.radius * 2 + 2, ball.radius * 2 + 2);
+            ctx.clearRect(ball.position.x - ball.radius - 3, ball.position.y - ball.radius - 2, (ball.radius * 2) + 5, (ball.radius * 2) + 5);
 
             ballBricksCollision();
 
@@ -446,8 +470,6 @@
                     //Clears the image of the brick from the canvas
                     ctx.clearRect(rects[i].x, rects[i].y, Brick.width, Brick.height);
                     rects.splice(i, 1); //Removes that block in the array
-
-                    //console.log("Block Hit! " + rects.length + " Remaining");
                 }
                 //if the ball hits top and bottom of brick at the same time, go in random direction
                 if (topBrickCondition == true && botBrickCondition == true) {
@@ -477,14 +499,13 @@
 
         //Reset the balls position and direction
         function resetBallLoc() {
-            ctx.clearRect(ball.position.x - ball.radius - 1, ball.position.y - ball.radius - 1, ball.radius * 2 + 2, ball.radius * 2 + 2);
+            ctx.clearRect(ball.position.x - ball.radius - 3, ball.position.y - ball.radius - 2, (ball.radius * 2) + 5, (ball.radius * 2) + 5);
             ball.position.x = canvas.width / 2;
             ball.position.y = canvas.height / 2;
 
-            if (playBtn) {
+            if (gameStarted) {
                 ball.ballCollisionLocation = 4;
             }
-
         }
 
         //Display the scores/lives left on-screen
@@ -506,27 +527,23 @@
         //Check if the game was won/lost or a life was lost
         function checkWinLose() {
             if ((ball.ballCollisionLocation != 1 || ball.ballCollisionLocation != 2 || ball.ballCollisionLocation != 3) && ball.position.y >= canvas.height - 20) {
-                // alert("LIFE LOST Click Ok To Continue");
+                lifeLost.play();
                 livesLeft--;
                 resetBallLoc();
             }
 
-            if (livesLeft == 0 ) {
-                alert("Game Over!!");
-                livesLeft = 3;
-                gameOver = true;
-                playBtn = false;
-                ResetGameSetup();
-            }
-
-            if (bricksDestroyed == BRICK_COUNT) {
-                // alert("Game Over!!");
-                gameOver = true;
-                playBtn = false;
+            if ((livesLeft <= 0) || (bricksDestroyed == BRICK_COUNT)) {
+                //Set the text font and color
+                gameText();
                 resetBallLoc();
-                ResetGameSetup();
+                gameOver = true;
+                gameStarted = false;
+                if (keyState[13]) {
+                    console.log("ENTER KEY HIT");
+                    livesLeft = 3;
+                    ResetGameSetup();
+                }
             }
-
         }
 
         //creates a boarder at the bottom on screen
@@ -541,28 +558,37 @@
             ctx.closePath();
         }
 
-        function ResetGameSetup() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            rects.length = 0;//set the array to 0
-            Brick.position.x = 20;
-            Brick.position.y = 40;
-            bricksDestroyed=0;
-            init();//set up everything again
+        function gameText() {
+            ctx.fillStyle = 'rgb(50,150,50)';
+            ctx.font = "50px Times New Roman";
+
+            if (bricksDestroyed == BRICK_COUNT) {
+                ctx.fillText('You Win!!', canvas.width / 3, canvas.height / 2);
+                winGameSound.play();
+            } else if (bricksDestroyed != BRICK_COUNT && gameStarted) {
+                ctx.fillText('GAME OVER', canvas.width / 3.5, canvas.height / 2 - 20);
+                loseGameSound.play();
+            }
+            if (gameStarted == false) {
+                ctx.fillText('Enter', 290, 260);
+                ctx.fillText('T', 315, 310);
+                ctx.fillText('Start Game', 240, 360);
+            } else
+                ctx.fillText('Tap Enter To Restart', canvas.width / 5, (canvas.height / 2) + 50);
         }
 
-
-
-        //Event listeners for key-up and key-down events
-        window.addEventListener('keydown', function (e) {
-            keyState[e.keyCode || e.which] = true;
-        }, true);
-        window.addEventListener('keyup', function (e) {
-            keyState[e.keyCode || e.which] = false;
-        }, true);
+        function ResetGameSetup() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            rects.length = 0; //set the array to 0
+            Brick.position.x = 20;
+            Brick.position.y = 40;
+            bricksDestroyed = 0;
+            init(); //set up everything again
+        }
 
         //used for creating smooth panning left and right for the paddle
         function paddleLoop(highResTimestamp) {
-            ctx.clearRect(paddle.position.x, paddle.position.y, paddle.width, paddle.height);
+            ctx.clearRect(0, paddle.position.y - 2, canvas.width, paddle.height + 4);
 
             if ((keyState[37] || keyState[65]) && paddle.position.x >= canvas.clientLeft) {
                 paddle.position.x -= paddle.speed;
