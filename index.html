@@ -78,7 +78,7 @@
                 y: canvas.height / 2 + 40
             },
             ballCollisionLocation: 4,
-            ballSpeed: 4,
+            ballSpeed: 5,
             radius: 10,
             padddleCollision: false,
             imageSize: 12.5,
@@ -138,7 +138,7 @@
             }
         }
 
-        init();
+        init(); //set up the game eg paddle/ball/bricks etcd
 
         //Load the ball image onto the canvas from the start
         ball.image.onload = function () {
@@ -294,7 +294,7 @@
                 //console.log("Ball Hit A Wall");
 
                 //if the ball hit the left wall
-                if (ball.position.x - ball.radius <= canvas.clientLeft) {
+                if (ball.position.x - ball.radius <= 0) {
                     //console.log("Ball Hit left Wall");
                     if (ball.ballCollisionLocation == 5 || ball.ballCollisionLocation == 1) {
                         ball.ballCollisionLocation = 6; //ball right and up
@@ -331,16 +331,18 @@
         //Check for a collision on the bricks
         function ballBricksCollision() {
 
-            var ballsXLeft = ball.position.x - ball.radius;
-            var ballsXRight = ball.position.x + ball.radius;
+            // set the balls x and y pos + and - the radius to each var for easier use below
+            var ballsXLeft = ball.position.x - ball.radius,
+                ballsXRight = ball.position.x + ball.radius;
 
-            var ballsYTop = ball.position.y - ball.radius;
-            var ballsYBot = ball.position.y + ball.radius;
+            var ballsYTop = ball.position.y - ball.radius,
+                ballsYBot = ball.position.y + ball.radius;
 
-            var topBrickCondition = false;
-            var botBrickCondition = false;
+            //used to see if the bricks were hit in the middle of top/bot
+            var topBrickCondition = false,
+                botBrickCondition = false;
 
-            //for loop cheacking over number of bricks in array
+            //for loop cheacking over all remaining bricks in array
             for (var i in rects) {
                 //if the ball hits the block anywhere
                 if ((ballsYBot >= rects[i].y) && (ballsYTop <= (rects[i].y + Brick.height)) && ((ballsXRight >= rects[i].x) && (ballsXLeft <= (rects[i].x + Brick.width)))) {
@@ -410,8 +412,6 @@
                         else if (ball.ballCollisionLocation == 7) {
                             ball.ballCollisionLocation = 5;
                         }
-                        //if the ball hit the bottom of the brick after top of brick
-                        //else if(){} 
                     }
 
                     //if ball hit Left of the brick
@@ -432,7 +432,6 @@
                     if (ballsXLeft <= rects[i].x + Brick.width && ballsXRight >= rects[i].x + Brick.width && ball.position.y >= rects[i].y && ball.position.y <= rects[i].y + (Brick.height + 8)) {
                         console.log("Ball Hit Right Of Brick");
 
-
                         //Ball hit brick after Right wall going up
                         if (ball.ballCollisionLocation == 5 || ball.ballCollisionLocation == 1) {
                             ball.ballCollisionLocation = 6;
@@ -445,24 +444,24 @@
 
                     //Clears the image of the brick from the canvas
                     ctx.clearRect(rects[i].x - 1, rects[i].y - 1, Brick.width + 2, Brick.height + 2);
-                    rects.splice(i, 1); //Removes that block in the array
+                    rects.splice(i, 1); //REMOVES that block in the array
                 }
-                //if the ball hits top and bottom of brick at the same time, go in random direction
+                //if the ball hits top and bottom (middle of 2 bricks) at the same time, go in random direction
+                //based on a random number
                 if (topBrickCondition == true && botBrickCondition == true) {
                     var number = Math.floor((Math.random() * 10) + 1);
 
                     //if the ball was from the left
                     if (ball.ballCollisionLocation == 8 || ball.ballCollisionLocation == 6) {
-                        console.log("Ball Hit left brick top and bottom");
+                        console.log("Ball Hit left of the  brick top and bottom");
                         if (number > 5)
                             ball.ballCollisionLocation = 5;
                         else
                             ball.ballCollisionLocation = 7;
-
                     }
                     //else its from the right
                     else {
-                        console.log("Ball Hit right brick top and bottom");
+                        console.log("Ball Hit right of the brick top and bottom");
                         if (number > 5)
                             ball.ballCollisionLocation = 6;
                         else
@@ -473,7 +472,7 @@
             }
         }
 
-        //Reset the balls position and direction
+        //Reset the balls position and direction to the start
         function resetBallLoc() {
             ctx.clearRect(ball.position.x - ball.radius - 3, ball.position.y - ball.radius - 2.5, (ball.radius * 2.5), (ball.radius * 2.5));
             ball.position.x = (canvas.width / 2) + 15;
@@ -499,17 +498,19 @@
 
         //Check if the game was won/lost or a life was lost
         function checkWinLose() {
+            //if ball didnt hit paddle and is less than a certian hight life was lost
             if ((ball.ballCollisionLocation != 1 || ball.ballCollisionLocation != 2 || ball.ballCollisionLocation != 3) && ball.position.y >= canvas.height - 10) {
                 lifeLost.play();
                 livesLeft--;
                 resetBallLoc();
             }
+            //if game was won or lost
             if ((livesLeft <= 0) || (bricksDestroyed == BRICK_COUNT)) {
                 gameText();
                 resetBallLoc();
                 gameOver = true;
                 gameStarted = false;
-                if (keyState[13]) { //if Enter key press
+                if (keyState[13]) { //if Enter key press reset game
                     livesLeft = 3;
                     ResetGameSetup();
                 }
@@ -525,7 +526,7 @@
                 ctx.fillText('You Win!!', canvas.width / 2.8, canvas.height / 2 + 50);
                 winGameSound.play();
             } else if (bricksDestroyed != BRICK_COUNT && gameStarted) {
-                ctx.fillText('GAME OVER', canvas.width / 3.3, canvas.height / 2 + 50);
+                ctx.fillText('GAME OVER', canvas.width / 3.3, (canvas.height / 2) + 25);
                 loseGameSound.play();
             }
             if (gameStarted == false) {
@@ -534,13 +535,14 @@
                 ctx.fillText('Start Game', 280, 500);
                 ball.draw();
             } else
-                ctx.fillText('Press Enter To Restart', canvas.width / 4.5, (canvas.height / 2) + 100);
+                ctx.fillText('Press Enter To Restart', canvas.width / 4.5, (canvas.height / 2) + 90);
         }
 
         //Resets the game to the begining state
         function ResetGameSetup() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height); //clear the canvas
             rects.length = 0; //set the array to 0
+            //reset the brick positions/ brickDestroyed count
             Brick.position.x = 20;
             Brick.position.y = 180;
             bricksDestroyed = 0;
