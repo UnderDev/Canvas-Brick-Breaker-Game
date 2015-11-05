@@ -12,6 +12,30 @@
             border: 6px solid;
             border-image: url("images/boarderImg.JPG") 30 30 round;
         }
+        
+        h1 {
+            color: green;
+            font-family: monospace;
+            text-align: center;
+        }
+        
+        p {
+            color: black;
+            font-family: sans-serif;
+            text-align: center;
+            font-style: bold;
+        }
+        
+        div {
+            width: 50.5em;
+            border: 2px solid #000000;
+            word-wrap: break-word;
+            margin-top: inherit
+        }
+        
+        ul {
+            font-family: sans-serif;
+        }
     </style>
 </head>
 
@@ -50,10 +74,10 @@
         //load the images for the sun and paddle and hearts
         var sunImg = new Image();
         sunImg.src = 'images/sunImg.png';
-        
+
         var paddleImg = new Image();
         paddleImg.src = 'images/paddleImg.png';
-        
+
         var hearts = new Image();
         hearts.src = 'images/heartImg.png';
 
@@ -500,7 +524,6 @@
                 heartYPos = canvas.height - 30;
 
             //Set the text font and color
-            ctx.fillStyle = 'rgb(255,255,255)';
             ctx.font = "25px Times New Roman";
             //Clear the bottom 30 pixels of the canvas
             ctx.clearRect(0, canvas.height - 30, canvas.width, 30);
@@ -509,8 +532,11 @@
             for (var i in heartsLeft) {
                 ctx.drawImage(heartsLeft[i], heartXPos += 33, heartYPos);
             }
-            // Display Text 5 pixels from the bottom of the canvas
-            ctx.fillText('Score: ' + bricksDestroyed, 10, canvas.height - 5);
+            // Display Score 10 pixels from the bottom of the canvas in white/gold
+            ctx.fillStyle = 'white';
+            ctx.fillText('Score: ', 10, canvas.height - 5);
+            ctx.fillStyle = 'Gold';
+            ctx.fillText(bricksDestroyed, 85, canvas.height - 5);
         }
 
         //Check if the game was won/lost or a life was lost
@@ -586,6 +612,29 @@
         }
         paddleLoop();
     </script>
+
+    <div>
+        <h1>Instructions</h1>
+        <p>
+            It was the start of warm sunny day when all of a sudden a cluster of bricks formed a wall blocking the sun from rising! Your mission is to destroy thoes pesky bricks and help the sun to rise.
+            <p>
+                To Destroy the bricks you will have to control the log at the bottom of the screen using the left/right arrows or the A/B keys, to keep the sun from setting below the grass.
+            </p>
+
+            <p> Once all the blocks are Destroyed! You will have defeted the game, and have helped the the sun to rise YIPEE!!. Altho if you let the sun drop in the grass 3 times, the sun will set and you will lose the game and the posibility of a nice farmers tan.
+            </p>
+    </div>
+    <p></p>
+    <div>
+        <h1>Controls</h1>
+        <ul>
+            <li><b>Move Log Left:</b>  Push the A key or the Left arrow key</li>
+            <li><b>Move Log Right:</b>  Push the D key or the Right arrow key</li>
+            <p></p>
+            <li><b>Start The Game:</b>  Hit the Enter Key</li>
+            <li><b>Restart The Game:</b>  Hit the Enter Key after Winor Defeat</li>
+        </ul>
+    </div>
 </body>
 
 </html>
