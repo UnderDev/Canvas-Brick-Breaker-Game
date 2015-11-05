@@ -13,7 +13,9 @@ To Destroy the bricks you will have to control the log at the bottom of the scre
 Once all the blocks are Destroyed! You will have defeted the game, and have helped the the sun to rise YIPEE!!. Altho if you let the sun drop in the grass 3 times, the sun will set and you will lose the game and the posibility of a nice farmers tan.
 
 
-## Log Controls
+## Controls
 
-* <b>Move Left:</b> Push the A key or the left arrow key
-* * <b>Move Right:</b> Push the A key or the left arrow key
+* <b>Move Log Left:</b> Push the A key or the Left arrow key
+* <b>Move Log  Right:</b> Push the D key or the Right arrow key
+* <b>Start The Game:</b> Hit the Enter Key
+* <b>Restart The Game:</b> Hit the Enter Key after Winor Defeat
