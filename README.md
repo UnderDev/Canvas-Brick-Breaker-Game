@@ -18,4 +18,4 @@ Once all the blocks are Destroyed! You will have defeted the game, and have help
 * <b>Move Log  Right:</b>  Push the D key or the Right arrow key
 
 * <b>Start The Game:</b>   Hit the Enter Key
-* <b>Restart The Game:</b> Hit the Enter Key after Winor Defeat
+* <b>Restart The Game:</b> Hit the Enter Key after Win or Defeat
