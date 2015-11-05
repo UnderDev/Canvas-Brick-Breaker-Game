@@ -15,4 +15,5 @@ Once all the blocks are Destroyed! You will have defeted the game, and have help
 
 ## Log Controls
 
-* Move Left push the A key or the left arrow key
+* Move Left:
+- push the A key or the left arrow key
