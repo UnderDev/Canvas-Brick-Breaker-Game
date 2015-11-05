@@ -27,32 +27,35 @@
         canvas.width = 800;
 
         var rects = []; //array for all the rects(bricks)
+        var heartsLeft = [];
         var keyState = {}; //holds the keys pressed
         const BRICK_COUNT = 42;
 
-        var canvasBoarder = 150;
-
+        var canvasBoarder = 150; //sets the Hight of the canvas for the ball
 
         var gameStarted = false,
             gameOver = false;
 
-        var livesLeft = 3,
+        var lifeLeft = 3,
             bricksDestroyed = 0;
-
 
         //load sound files and store in associated vars
         var bounceSound = new Audio("SoundClips/jumpSound.mp3"),
             breakSound = new Audio("SoundClips/breakNoise.ogg"),
             winGameSound = new Audio("SoundClips/winGameSound.wav"),
             loseGameSound = new Audio("SoundClips/loseGameSound.wav"),
-            lifeLost = new Audio("SoundClips/lifeLost.wav");
+            lifeLostSound = new Audio("SoundClips/lifeLost.wav");
 
 
-        //load the images for the sun and paddle
+        //load the images for the sun and paddle and hearts
         var sunImg = new Image();
         sunImg.src = 'images/sunImg.png';
+        
         var paddleImg = new Image();
         paddleImg.src = 'images/paddleImg.png';
+        
+        var hearts = new Image();
+        hearts.src = 'images/heartImg.png';
 
 
         //Event listeners for key-up and key-down events
@@ -149,6 +152,8 @@
         function init() {
             paddle.createPaddle(); //Draw the paddle
 
+            createHearts();
+
             ball.draw(); //draw the ball
             createBricks(); //Creates all the brick before the game starts
 
@@ -212,6 +217,12 @@
             //if the gameOver is NOT over repeat the animation 
             if (!gameOver) {
                 requestAnimationFrame(animate); //repeat the animation while games not over
+            }
+        }
+
+        function createHearts() {
+            for (var i = 0; i < 3; i++) {
+                heartsLeft[i] = hearts;
             }
         }
 
@@ -484,34 +495,41 @@
 
         //Display the scores/lives left on-screen
         function displayScoreBoard() {
+            //set the hearts positions on the screen
+            var heartXPos = canvas.width - 140,
+                heartYPos = canvas.height - 30;
+
             //Set the text font and color
             ctx.fillStyle = 'rgb(255,255,255)';
             ctx.font = "25px Times New Roman";
-
             //Clear the bottom 30 pixels of the canvas
             ctx.clearRect(0, canvas.height - 30, canvas.width, 30);
+
+            //display the lives left on the screen at the bottom
+            for (var i in heartsLeft) {
+                ctx.drawImage(heartsLeft[i], heartXPos += 33, heartYPos);
+            }
             // Display Text 5 pixels from the bottom of the canvas
             ctx.fillText('Score: ' + bricksDestroyed, 10, canvas.height - 5);
-            ctx.fillText('LivesLeft: ' + livesLeft, canvas.width - 140, canvas.height - 5);
-
         }
 
         //Check if the game was won/lost or a life was lost
         function checkWinLose() {
             //if ball didnt hit paddle and is less than a certian hight life was lost
             if ((ball.ballCollisionLocation != 1 || ball.ballCollisionLocation != 2 || ball.ballCollisionLocation != 3) && ball.position.y >= canvas.height - 10) {
-                lifeLost.play();
-                livesLeft--;
-                resetBallLoc();
+                lifeLostSound.play(); //play audio file
+                lifeLeft--;
+                heartsLeft.splice(lifeLeft, 1); //Remove a life from the array
+                resetBallLoc(); //reset the ball position
             }
             //if game was won or lost
-            if ((livesLeft <= 0) || (bricksDestroyed == BRICK_COUNT)) {
+            if ((lifeLeft <= 0) || (bricksDestroyed == BRICK_COUNT)) {
                 gameText();
                 resetBallLoc();
                 gameOver = true;
                 gameStarted = false;
                 if (keyState[13]) { //if Enter key press reset game
-                    livesLeft = 3;
+                    lifeLeft = 3;
                     ResetGameSetup();
                 }
             }
