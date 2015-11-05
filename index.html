@@ -26,30 +26,40 @@
         canvas.height = 800;
         canvas.width = 800;
 
-        var rects = [];
-        var keyState = {};
+        var rects = []; //array for all the rects(bricks)
+        var keyState = {}; //holds the keys pressed
         const BRICK_COUNT = 42;
+
+        var canvasBoarder = 150;
+
 
         var gameStarted = false,
             gameOver = false;
 
-        var score = 0,
-            livesLeft = 3,
+        var livesLeft = 3,
             bricksDestroyed = 0;
 
-        var canvasBoarder = 150;
 
-        //sound files
+        //load sound files and store in associated vars
         var bounceSound = new Audio("SoundClips/jumpSound.mp3"),
             breakSound = new Audio("SoundClips/breakNoise.ogg"),
             winGameSound = new Audio("SoundClips/winGameSound.wav"),
             loseGameSound = new Audio("SoundClips/loseGameSound.wav"),
             lifeLost = new Audio("SoundClips/lifeLost.wav");
 
+
+        //load the images for the sun and paddle
+        var sunImg = new Image();
+        sunImg.src = 'images/sunImg.png';
+        var paddleImg = new Image();
+        paddleImg.src = 'images/paddleImg.png';
+
+
         //Event listeners for key-up and key-down events
         window.addEventListener('keydown', function (e) {
             keyState[e.keyCode || e.which] = true;
 
+            //Strats the game on keyDown event "Enter"
             if (keyState[13] && gameStarted == false) {
                 console.log("ENTER GAME")
                 ctx.clearRect(100, 300, canvas.width, 500);
@@ -61,87 +71,50 @@
         }, true);
 
 
-        //Creating ball object
+        //Creating ball object and place an image over its location in the ball.draw Function
         var ball = {
             position: {
                 x: canvas.width / 2 + 15,
-                y: canvas.height / 2
+                y: canvas.height / 2 + 40
             },
-            lineWidth: 2,
             ballCollisionLocation: 4,
             ballSpeed: 4,
             radius: 10,
             padddleCollision: false,
+            imageSize: 12.5,
+            image: sunImg,
 
             draw: function () {
                 ctx.beginPath();
-                ctx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, false);
-                ctx.lineWidth = this.lineWidth;
-                ctx.strokeStyle = 'rgb(255,255,255)';
-                ctx.stroke();
-                ctx.fillStyle = "rgb(255, 255, 0)";
-                ctx.fill();
+                ctx.drawImage(ball.image, ball.position.x - ball.imageSize, ball.position.y - ball.imageSize);
                 ctx.closePath();
-                /*  sunImg = new Image();
-                    sunImg.src = 'sunImg.png';
-                    sunImg.onload = function () {
-                    ctx.drawImage(sunImg, ball.position.x-15, ball.position.y-15);
-                    }*/
-
-
             }
         }
 
-        //Creating paddle object
+        //Creating paddle object and place an image over its location in the paddle.createPaddle Function
         var paddle = {
             height: 10,
             width: 100,
             speed: 10, //Affects where the paddls boundries are
             radius: 6,
-            lineWidth: 1,
+            logImg: paddleImg,
             position: {
                 x: canvas.width / 2 - 50,
                 y: canvas.height - 50
             },
             createPaddle: function () {
                 ctx.beginPath();
-
-                /*paddleImg = new Image();
-                paddleImg.src = 'paddleImg.png';
-                paddleImg.onload = function () {
-                    ctx.drawImage(paddleImg, paddle.position.x, paddle.position.y - 20);
-                }*/
-
-                ctx.strokeStyle = "rgb(153, 102, 51)";
-                ctx.fillStyle = "rgb(153, 102, 51)";
-                ctx.lineWidth = this.lineWidth;
-                ctx.moveTo(this.position.x, this.position.y + this.radius);
-                ctx.lineTo(this.position.x, this.position.y + this.height - this.radius);
-                ctx.quadraticCurveTo(this.position.x, this.position.y + this.height, this.position.x + this.radius, this.position.y + this.height);
-
-                ctx.lineTo(this.position.x + this.width - this.radius, this.position.y + this.height);
-                ctx.quadraticCurveTo(this.position.x + this.width, this.position.y + this.height, this.position.x + this.width, this.position.y + this.height - this.radius);
-
-                ctx.lineTo(this.position.x + this.width, this.position.y + this.radius);
-                ctx.quadraticCurveTo(this.position.x + this.width, this.position.y, this.position.x + this.width - this.radius, this.position.y);
-
-                ctx.lineTo(this.position.x + this.radius, this.position.y);
-                ctx.quadraticCurveTo(this.position.x, this.position.y, this.position.x, this.position.y + this.radius);
-
-                ctx.stroke();
-                ctx.fill();
+                ctx.drawImage(paddle.logImg, paddle.position.x, paddle.position.y - 3);
                 ctx.closePath();
             }
         }
 
-        //creating brick object
+        //creating brick object dand place an image over its location in the Brick.Setup Function
         var Brick = {
             height: 20,
             width: 50,
             hit: false,
             radius: 10,
-            color: 0,
-            lineWidth: 2,
             position: { //position of first block
                 x: 20,
                 y: 180
@@ -167,12 +140,19 @@
 
         init();
 
-        //Hold all the biginning methods before the game starts
+        //Load the ball image onto the canvas from the start
+        ball.image.onload = function () {
+            ctx.drawImage(ball.image, ball.position.x - ball.imageSize, ball.position.y - ball.imageSize);
+        }
+
+        //Display game on load up
         function init() {
             paddle.createPaddle(); //Draw the paddle
-            ball.draw(); //Draw the ball
+
+            ball.draw(); //draw the ball
             createBricks(); //Creates all the brick before the game starts
 
+            //if game isnt started show the text
             if (gameStarted == false)
                 gameText();
 
@@ -189,6 +169,7 @@
                 rects[i] = new Brick.Setup(Brick.position.x, Brick.position.y, Brick.hit, Brick.width, Brick.height);
                 Brick.position.x += 55;
 
+                //if the bricks are > than the canvas.width than move down a line
                 if (Brick.position.x + Brick.width >= canvas.width) {
                     Brick.position.y += 30;
                     Brick.position.x = 20;
@@ -196,7 +177,7 @@
             }
         }
 
-        //Used to strat the game via the button
+        //Used to start the game via the Enter Key
         function playGame() {
             requestAnimationFrame(animate); //animates the game
             gameStarted = true; //prevents the user hiting play multiple times
@@ -205,10 +186,10 @@
 
         //ANIMATE THE GAME
         function animate(highResTimestamp) {
-            // CLEARS THE BALL
-            ctx.clearRect(ball.position.x - ball.radius - 1, ball.position.y - ball.radius - 1, (ball.radius * 2) + ball.lineWidth, (ball.radius * 2) + ball.lineWidth);
+            // CLEARS THE BALL location
+            ctx.clearRect(ball.position.x - ball.radius - 3, ball.position.y - ball.radius - 2.5, (ball.radius * 2.5), (ball.radius * 2.5));
 
-            ballBricksCollision();
+            ballBricksCollision(); //check for brick collisions
 
             //Draw the remaining bricks in the array that arnt hit
             for (var i in rects) {
@@ -217,18 +198,18 @@
                 else
                     i++;
             }
-
-            moveBall(); //move the balls x/y pos
+            moveBall(); //move the ball/sun x/y pos(direction)
             ball.draw(); //creat the ball at new x/y pos
             paddle.createPaddle(); //create paddle so it dosnt disappear on collision
 
-            ballPaddleCollision();
-            ballBricksCollision();
-            ballWallCollision();
+            ballPaddleCollision(); //check for paddle collisions
+            ballBricksCollision(); //check for brick collisions
+            ballWallCollision(); //check for wall collisions
 
-            checkWinLose();
-            displayScoreBoard();
+            checkWinLose(); //check for game won/lost/life lost
+            displayScoreBoard(); //Display ScoreBoard at bottom of screen
 
+            //if the gameOver is NOT over repeat the animation 
             if (!gameOver) {
                 requestAnimationFrame(animate); //repeat the animation while games not over
             }
@@ -238,25 +219,23 @@
         function moveBall() {
             //switch on the ballCollisionLocation (int) to see if ball goes left/right/mid
             switch (ball.ballCollisionLocation) {
-                //paddle collision 1 - 3
+                //Paddle collision = case 1 - 3 
             case 1: //ball hit the left of the paddle
                 ball.position.x -= ball.ballSpeed;
                 ball.position.y -= ball.ballSpeed;
                 break;
-            case 2: //send ball up
+            case 2: //ball hit middle paddle
                 ball.position.y -= ball.ballSpeed
                 break;
             case 3: //ball hit the right of the paddle
-
                 ball.position.x += ball.ballSpeed;
                 ball.position.y -= ball.ballSpeed;
                 break;
 
-                //wall collision with ball
+                //Wall collision with ball case 4 - 9
             case 4: //send ball down
                 ball.position.y += ball.ballSpeed;
                 break;
-
             case 5: //send ball left and up
                 ball.position.x -= ball.ballSpeed;
                 ball.position.y -= ball.ballSpeed;
@@ -303,7 +282,7 @@
 
                     ball.ballCollisionLocation = 3;
                 }
-                bounceSound.play();
+                bounceSound.play(); //play the paddle collision sound
             }
         }
 
@@ -312,11 +291,11 @@
 
             //Did the ball hit the wall
             if (ball.position.y - ball.radius <= canvas.clientTop + canvasBoarder || ball.position.x + ball.radius >= canvas.width || ball.position.x - ball.radius <= canvas.clientLeft) {
-                console.log("Ball Hit A Wall");
+                //console.log("Ball Hit A Wall");
 
                 //if the ball hit the left wall
                 if (ball.position.x - ball.radius <= canvas.clientLeft) {
-                    console.log("Ball Hit left Wall");
+                    //console.log("Ball Hit left Wall");
                     if (ball.ballCollisionLocation == 5 || ball.ballCollisionLocation == 1) {
                         ball.ballCollisionLocation = 6; //ball right and up
                     } else if (ball.ballCollisionLocation == 7) {
@@ -326,7 +305,7 @@
 
                 //if the ball hit the right wall
                 if (ball.position.x + ball.radius >= canvas.width) {
-                    console.log("Ball Hit right Wall");
+                    //console.log("Ball Hit right Wall");
                     if (ball.ballCollisionLocation == 3 || ball.ballCollisionLocation == 6) {
                         ball.ballCollisionLocation = 5;
                     } else if (ball.ballCollisionLocation == 8 || ball.ballCollisionLocation == 9) {
@@ -334,23 +313,17 @@
                     }
                 }
 
-                //if the ball hit the Roof wall
+                //if the ball hit the Roof, Find where the ball hit the roof from 
                 if (ball.position.y - ball.radius <= canvas.clientTop + canvasBoarder) {
-
-                    //Find where the ball hit the roof from 
-                    if (ball.ballCollisionLocation == 2) {
-                        ball.ballCollisionLocation = 4; //ball come down
-                    }
-                    //
-                    else if ((ball.ballCollisionLocation == 5) || (ball.ballCollisionLocation == 1)) {
+                    //Ball hit roof form middle paddle
+                    if (ball.ballCollisionLocation == 2)
+                        ball.ballCollisionLocation = 4;
+                    //Ball hit roof form left paddle || right wall 
+                    else if ((ball.ballCollisionLocation == 5) || (ball.ballCollisionLocation == 1))
                         ball.ballCollisionLocation = 7;
-
-                    }
-                    //
-                    else if ((ball.ballCollisionLocation == 6) || (ball.ballCollisionLocation == 3)) {
+                    //Ball hit roof form right paddle || left wall
+                    else if ((ball.ballCollisionLocation == 6) || (ball.ballCollisionLocation == 3))
                         ball.ballCollisionLocation = 9;
-
-                    }
                 }
             }
         }
@@ -468,11 +441,10 @@
                         else if (ball.ballCollisionLocation == 7) {
                             ball.ballCollisionLocation = 8;
                         }
-
                     }
 
                     //Clears the image of the brick from the canvas
-                    ctx.clearRect(rects[i].x - 1, rects[i].y - 1, Brick.width + Brick.lineWidth, Brick.height + Brick.lineWidth);
+                    ctx.clearRect(rects[i].x - 1, rects[i].y - 1, Brick.width + 2, Brick.height + 2);
                     rects.splice(i, 1); //Removes that block in the array
                 }
                 //if the ball hits top and bottom of brick at the same time, go in random direction
@@ -503,10 +475,9 @@
 
         //Reset the balls position and direction
         function resetBallLoc() {
-            ctx.clearRect(ball.position.x - ball.radius - 1, ball.position.y - ball.radius - 1, (ball.radius * 2) + 2, (ball.radius * 2) + 2);
-            ball.position.x = canvas.width / 2 + 15;
-            ball.position.y = canvas.height / 2;
-
+            ctx.clearRect(ball.position.x - ball.radius - 3, ball.position.y - ball.radius - 2.5, (ball.radius * 2.5), (ball.radius * 2.5));
+            ball.position.x = (canvas.width / 2) + 15;
+            ball.position.y = canvas.height / 2 + 40;
             if (gameStarted) {
                 ball.ballCollisionLocation = 4;
             }
@@ -533,15 +504,12 @@
                 livesLeft--;
                 resetBallLoc();
             }
-
             if ((livesLeft <= 0) || (bricksDestroyed == BRICK_COUNT)) {
-                //Set the text font and color
                 gameText();
                 resetBallLoc();
                 gameOver = true;
                 gameStarted = false;
-                if (keyState[13]) {
-                    console.log("ENTER KEY HIT");
+                if (keyState[13]) { //if Enter key press
                     livesLeft = 3;
                     ResetGameSetup();
                 }
@@ -554,18 +522,19 @@
             ctx.font = "50px Times New Roman";
 
             if (bricksDestroyed == BRICK_COUNT) {
-                ctx.fillText('You Win!!', canvas.width / 2.5, canvas.height / 2);
+                ctx.fillText('You Win!!', canvas.width / 2.8, canvas.height / 2 + 50);
                 winGameSound.play();
             } else if (bricksDestroyed != BRICK_COUNT && gameStarted) {
-                ctx.fillText('GAME OVER', canvas.width / 3, canvas.height / 2 - 20);
+                ctx.fillText('GAME OVER', canvas.width / 3.3, canvas.height / 2 + 50);
                 loseGameSound.play();
             }
             if (gameStarted == false) {
-                ctx.fillText('Enter', 340, 360);
-                ctx.fillText('T', 365, 410);
-                ctx.fillText('Start Game', 290, 460);
+                ctx.fillText('Press Enter', 280, 400);
+                ctx.fillText('T', 365, 450);
+                ctx.fillText('Start Game', 280, 500);
+                ball.draw();
             } else
-                ctx.fillText('Tap Enter To Restart', canvas.width / 4, (canvas.height / 2) + 50);
+                ctx.fillText('Press Enter To Restart', canvas.width / 4.5, (canvas.height / 2) + 100);
         }
 
         //Resets the game to the begining state
@@ -578,9 +547,12 @@
             init(); //set up everything again
         }
 
-        //used for creating smooth panning left and right for the paddle
+        //used for creating smooth panning left and right for the paddle/logImg
         function paddleLoop(highResTimestamp) {
-            ctx.clearRect(0, paddle.position.y - 2, canvas.width, paddle.height + 4);
+
+            ctx.clearRect(0, paddle.position.y - 3, canvas.width, paddle.height + 10);
+
+            paddle.createPaddle();
 
             if ((keyState[37] || keyState[65]) && paddle.position.x >= canvas.clientLeft) {
                 paddle.position.x -= paddle.speed;
