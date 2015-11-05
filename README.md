@@ -8,6 +8,8 @@ It was the start of warm sunny day when all of a sudden a cluster of bricks form
 
 To Destroy the bricks you will have to control the log at the bottom of the screen using the left/right arrows or the A/B keys, to keep the sun from setting below the grass. 
 
-Once all the blocks are Destroyed! You will have won the game, and have helped the the sun to rise YIPEE!!. Altho if you let the sun drop in the grass 3 times, the sun will set and you will lose the game and the posibility of a nice farmers tan.
+Once all the blocks are Destroyed! You will have defeted the game, and have helped the the sun to rise YIPEE!!. Altho if you let the sun drop in the grass 3 times, the sun will set and you will lose the game and the posibility of a nice farmers tan.
 
+## Log Controls
 
+-Move Left push the A key or the left arrow key
