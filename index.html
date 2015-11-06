@@ -55,6 +55,8 @@
         var keyState = {}; //holds the keys pressed
         var lvlOnePassed = false;
         var canvasBoarder = 150; //sets the Hight of the canvas for the ball
+        
+        var lvlSwitch=0;//use to switch between lvls
 
         var gameStarted = false,
             gameOver = false;
@@ -106,7 +108,6 @@
             keyState[e.keyCode || e.which] = false;
         }, true);
 
-
         //Creating ball object and place an image over its location in the ball.draw Function
         var ball = {
             position: {
@@ -114,7 +115,7 @@
                 y: canvas.height / 2 + 100
             },
             ballCollisionLocation: 4,
-            ballSpeed: 5,
+            ballSpeed: 6,
             radius: 10,
             padddleCollision: false,
             imageSize: 12.5,
@@ -205,7 +206,8 @@
         //Creates all the brick objects each with there own properities in a rects[] array
         function createBricks() {
             console.log("Creating bricks");
-            if (lvlOnePassed) {
+            
+            if (lvlOnePassed && lvlSwitch %2 ==0) {
                 Brick.totalNoBricks = 32; //set up new amount of bricks
                 Brick.position.x += 100; //new x strat pos for 1st brick
             } else
@@ -217,7 +219,7 @@
                 Brick.position.x += 55;
 
                 //checks if lvl one was passed, if so create lvl 2 bricks
-                if (lvlOnePassed) {
+                if (lvlOnePassed && lvlSwitch %2 ==0) {
                     createBrickLvlTwo(i); //pass in the current brick to the 2nd lvl creator
                 } else {
                     //if the bricks are > than the canvas.width than move down a line and repeat
@@ -228,7 +230,6 @@
                 }
             }
         }
-
 
         function createBrickLvlTwo(brickNum) {
             if (brickNum == 0) {
@@ -336,7 +337,6 @@
                 requestAnimationFrame(animate); //repeat the animation while games not over
             }
         }
-
 
         //creates the heart images into an array 
         function createHearts() {
@@ -643,7 +643,7 @@
             if ((ball.ballCollisionLocation != 1 || ball.ballCollisionLocation != 2 || ball.ballCollisionLocation != 3) && ball.position.y >= canvas.height - 10) {
                 lifeLostSound.play(); //play audio file
                 lifeLeft--;
-                heartsLeft.splice(lifeLeft, 1); //Remove a life from the array
+                heartsLeft.splice(lifeLeft, Brick.totalNoBricks); //Remove a life from the array
                 resetBallLoc(); //reset the ball position
             }
 
@@ -654,7 +654,7 @@
             ctx.fillStyle = 'rgb(255,255,255)';
             ctx.font = "50px Times New Roman";
 
-            if (lifeLeft <= 0 || bricksDestroyed == 2) {
+            if (lifeLeft <= 0 || bricksDestroyed == Brick.totalNoBricks) {
                 //if game lost
                 if (lifeLeft <= 0) {
                     resetBallLoc(); //reset ball
@@ -670,7 +670,7 @@
                     ResetGameSetup();
                 }
                 //if game was won
-                if (bricksDestroyed == 2) {
+                if (bricksDestroyed == Brick.totalNoBricks) {
                     resetBallLoc(); //reset ball
                     gameOver = true;
                     gameStarted = false; //game resets
@@ -680,9 +680,9 @@
 
                     winGameSound.play();
                     lvlOnePassed = true; //current lvl was passed
-                    if (keyState[13]) { //if Enter key press reset game
-                        ResetGameSetup();
-                    }
+                }
+                if (keyState[13]) { //if Enter key press reset game
+                    ResetGameSetup();
                 }
             }
         }
@@ -700,7 +700,6 @@
             }
         }
 
-
         //Resets the game to the begining state
         function ResetGameSetup() {
             ctx.clearRect(0, 0, canvas.width, canvas.height); //clear the canvas
@@ -710,9 +709,8 @@
             Brick.position.y = 180;
             bricksDestroyed = 0;
             init(); //set up everything again
+            lvlSwitch++;//used to switch between lvls
         }
-
-
 
         //used for creating smooth panning left and right for the paddle/logImg
         function paddleLoop(highResTimestamp) {
@@ -733,7 +731,6 @@
         }
         paddleLoop();
     </script>
-
 
     <div>
         <h1>Instructions</h1>
