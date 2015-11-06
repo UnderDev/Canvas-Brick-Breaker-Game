@@ -204,11 +204,12 @@
 
         //Creates all the brick objects each with there own properities in a rects[] array
         function createBricks() {
-
+            console.log("Creating bricks");
             if (lvlOnePassed) {
                 Brick.totalNoBricks = 32; //set up new amount of bricks
                 Brick.position.x += 100; //new x strat pos for 1st brick
-            }
+            } else
+                Brick.totalNoBricks = 42;
 
             for (var i = 0; i < Brick.totalNoBricks; i++) {
                 //setup all bricks to have x, y and hit valuse to false(not HIT)
@@ -653,7 +654,7 @@
             ctx.fillStyle = 'rgb(255,255,255)';
             ctx.font = "50px Times New Roman";
 
-            if (lifeLeft <= 0 || bricksDestroyed == Brick.totalNoBricks) {
+            if (lifeLeft <= 0 || bricksDestroyed == 2) {
                 //if game lost
                 if (lifeLeft <= 0) {
                     resetBallLoc(); //reset ball
@@ -665,9 +666,11 @@
                     loseGameSound.play();
                     userScore = 0;
                     lifeLeft = 3; //reset lives on to 3
+                    lvlOnePassed = false;
+                    ResetGameSetup();
                 }
                 //if game was won
-                if (bricksDestroyed == Brick.totalNoBricks) {
+                if (bricksDestroyed == 2) {
                     resetBallLoc(); //reset ball
                     gameOver = true;
                     gameStarted = false; //game resets
@@ -677,11 +680,9 @@
 
                     winGameSound.play();
                     lvlOnePassed = true; //current lvl was passed
-
-                }
-
-                if (keyState[13]) { //if Enter key press reset game
-                    ResetGameSetup();
+                    if (keyState[13]) { //if Enter key press reset game
+                        ResetGameSetup();
+                    }
                 }
             }
         }
@@ -700,10 +701,6 @@
         }
 
 
-
-
-
-
         //Resets the game to the begining state
         function ResetGameSetup() {
             ctx.clearRect(0, 0, canvas.width, canvas.height); //clear the canvas
@@ -714,12 +711,6 @@
             bricksDestroyed = 0;
             init(); //set up everything again
         }
-
-
-
-
-
-
 
 
 
@@ -742,14 +733,6 @@
         }
         paddleLoop();
     </script>
-
-
-
-
-
-
-
-
 
 
     <div>
