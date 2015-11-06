@@ -204,9 +204,10 @@
 
         //Creates all the brick objects each with there own properities in a rects[] array
         function createBricks() {
+
             if (lvlOnePassed) {
-                Brick.totalNoBricks = 32;
-                Brick.position.x += 100;
+                Brick.totalNoBricks = 32;//set up new amount of bricks
+                Brick.position.x += 100;//new x strat pos for 1st brick
             }
 
             for (var i = 0; i < Brick.totalNoBricks; i++) {
@@ -214,11 +215,10 @@
                 rects[i] = new Brick.Setup(Brick.position.x, Brick.position.y, Brick.hit, Brick.width, Brick.height);
                 Brick.position.x += 55;
 
+                //checks if lvl one was passed, if so create lvl 2 bricks
                 if (lvlOnePassed) {
-                    createBrickLvlTwo(i);
-                    console.log("2ND lvl");
+                    createBrickLvlTwo(i);//pass in the current brick to the 2nd lvl creator
                 }
-                //
                 else {
                     //if the bricks are > than the canvas.width than move down a line and repeat
                     if (Brick.position.x + Brick.width >= canvas.width) {
@@ -645,7 +645,7 @@
             }
 
             //if game was won or lost
-            if ((lifeLeft <= 0) || (bricksDestroyed == Brick.totalNoBricks)) {
+            if ((lifeLeft <= 0) || (bricksDestroyed == 1)) {
                 gameTextCheckWinLose(); //display game text/ and swich lvl etc
                 resetBallLoc(); //reset ball
                 gameOver = true;
@@ -656,34 +656,36 @@
                 }
             }
         }
-
         //Prints out the text to the screen based on winning/losing/start of game
         function gameTextCheckWinLose() {
             ctx.fillStyle = 'rgb(255,255,255)';
             ctx.font = "50px Times New Roman";
 
-            if (bricksDestroyed == Brick.totalNoBricks) {
+            if (bricksDestroyed == 1) {
                 ctx.fillText('You Win!!', canvas.width / 2.8, canvas.height / 2 + 50);
                 winGameSound.play();
-
+                
                 lvlOnePassed = true; //current lvl was passed
-
-            } else if (bricksDestroyed != Brick.totalNoBricks && gameStarted) {
+            }
+            //
+            else if (bricksDestroyed != Brick.totalNoBricks && gameStarted) {
                 ctx.fillText('GAME OVER', canvas.width / 3.3, (canvas.height / 2) + 25);
                 loseGameSound.play();
+                userScore=0;
             }
+
             if (gameStarted == false) {
                 ctx.fillText('Press Enter', 280, 400);
                 ctx.fillText('T', 365, 450);
                 ctx.fillText('Start Game', 280, 500);
                 ball.draw();
-            } else if (lvlOnePassed == false && gameStarted) {
+            } else if (lvlOnePassed == false && gameStarted == true) {
                 ctx.fillText('Press Enter To Restart', canvas.width / 4.5, (canvas.height / 2) + 90);
             }
             //
-            else {
-                ctx.fillText('Press Enter To Progess', canvas.width / 4.5, (canvas.height / 2) + 90);
-                ctx.fillText('To level Two ', canvas.width / 3, (canvas.height / 2) + 140);
+            else if((lvlOnePassed == true && gameStarted == true))
+            {
+                ctx.fillText('Press Enter To Continue', canvas.width / 5, (canvas.height / 2) + 90);
             }
         }
 
@@ -696,14 +698,7 @@
             Brick.position.y = 180;
             bricksDestroyed = 0;
             init(); //set up everything again
-
-            if (lvlOnePassed == true) {
-                lvlOnePassed = false;
-                console.log("resetiing lvl");
-            }
-
         }
-
         //used for creating smooth panning left and right for the paddle/logImg
         function paddleLoop(highResTimestamp) {
 
