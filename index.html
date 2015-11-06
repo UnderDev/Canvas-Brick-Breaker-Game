@@ -97,7 +97,7 @@
             //Strats the game on keyDown event "Enter"
             if (keyState[13] && gameStarted == false) {
                 console.log("ENTER GAME")
-                ctx.clearRect(275, 350, 300, 200); //clear the text off the screen
+                ctx.clearRect(170, 390, 500, 290); //clear the text off the screen
                 playGame();
             }
         }, true);
@@ -111,7 +111,7 @@
         var ball = {
             position: {
                 x: canvas.width / 2 + 15,
-                y: canvas.height / 2 + 40
+                y: canvas.height / 2 + 100
             },
             ballCollisionLocation: 4,
             ballSpeed: 5,
@@ -194,7 +194,7 @@
 
             //if game isnt started show the text
             if (gameStarted == false)
-                gameTextCheckWinLose();
+                gameText();
 
             //Draws all the brick OBJS out to the screen
             for (var i in rects) {
@@ -206,8 +206,8 @@
         function createBricks() {
 
             if (lvlOnePassed) {
-                Brick.totalNoBricks = 32;//set up new amount of bricks
-                Brick.position.x += 100;//new x strat pos for 1st brick
+                Brick.totalNoBricks = 32; //set up new amount of bricks
+                Brick.position.x += 100; //new x strat pos for 1st brick
             }
 
             for (var i = 0; i < Brick.totalNoBricks; i++) {
@@ -217,9 +217,8 @@
 
                 //checks if lvl one was passed, if so create lvl 2 bricks
                 if (lvlOnePassed) {
-                    createBrickLvlTwo(i);//pass in the current brick to the 2nd lvl creator
-                }
-                else {
+                    createBrickLvlTwo(i); //pass in the current brick to the 2nd lvl creator
+                } else {
                     //if the bricks are > than the canvas.width than move down a line and repeat
                     if (Brick.position.x + Brick.width >= canvas.width) {
                         Brick.position.y += 30;
@@ -337,8 +336,10 @@
             }
         }
 
+
+        //creates the heart images into an array 
         function createHearts() {
-            for (var i = 0; i < 3; i++) {
+            for (var i = 0; i < lifeLeft; i++) {
                 heartsLeft[i] = hearts;
             }
         }
@@ -605,7 +606,8 @@
         function resetBallLoc() {
             ctx.clearRect(ball.position.x - ball.radius - 3, ball.position.y - ball.radius - 2.5, (ball.radius * 2.5), (ball.radius * 2.5));
             ball.position.x = (canvas.width / 2) + 15;
-            ball.position.y = canvas.height / 2 + 40;
+            ball.position.y = (canvas.height / 2) + 100;
+
             if (gameStarted) {
                 ball.ballCollisionLocation = 4;
             }
@@ -644,50 +646,63 @@
                 resetBallLoc(); //reset the ball position
             }
 
-            //if game was won or lost
-            if ((lifeLeft <= 0) || (bricksDestroyed == 1)) {
-                gameTextCheckWinLose(); //display game text/ and swich lvl etc
-                resetBallLoc(); //reset ball
-                gameOver = true;
-                gameStarted = false; //game resets
+            if (gameStarted == false) {
+                gameText(); //display game text
+            }
+
+            ctx.fillStyle = 'rgb(255,255,255)';
+            ctx.font = "50px Times New Roman";
+
+            if (lifeLeft <= 0 || bricksDestroyed == Brick.totalNoBricks) {
+                //if game lost
+                if (lifeLeft <= 0) {
+                    resetBallLoc(); //reset ball
+                    gameOver = true;
+                    gameStarted = false; //game resets
+
+                    ctx.fillText('GAME OVER', canvas.width / 3.3, (canvas.height / 2) + 25);
+                    ctx.fillText('Press Enter To Restart', canvas.width / 4.5, (canvas.height / 2) + 90);
+                    loseGameSound.play();
+                    userScore = 0;
+                    lifeLeft = 3; //reset lives on to 3
+                }
+                //if game was won
+                if (bricksDestroyed == Brick.totalNoBricks) {
+                    resetBallLoc(); //reset ball
+                    gameOver = true;
+                    gameStarted = false; //game resets
+
+                    ctx.fillText('You Win!!', canvas.width / 2.8, canvas.height / 2 + 50);
+                    ctx.fillText('Press Enter To Continue', canvas.width / 5, (canvas.height / 2) + 90);
+
+                    winGameSound.play();
+                    lvlOnePassed = true; //current lvl was passed
+
+                }
+
                 if (keyState[13]) { //if Enter key press reset game
-                    lifeLeft = 3; //reset lives on key press
                     ResetGameSetup();
                 }
             }
         }
+
         //Prints out the text to the screen based on winning/losing/start of game
-        function gameTextCheckWinLose() {
+        function gameText() {
             ctx.fillStyle = 'rgb(255,255,255)';
             ctx.font = "50px Times New Roman";
 
-            if (bricksDestroyed == 1) {
-                ctx.fillText('You Win!!', canvas.width / 2.8, canvas.height / 2 + 50);
-                winGameSound.play();
-                
-                lvlOnePassed = true; //current lvl was passed
-            }
-            //
-            else if (bricksDestroyed != Brick.totalNoBricks && gameStarted) {
-                ctx.fillText('GAME OVER', canvas.width / 3.3, (canvas.height / 2) + 25);
-                loseGameSound.play();
-                userScore=0;
-            }
-
             if (gameStarted == false) {
-                ctx.fillText('Press Enter', 280, 400);
-                ctx.fillText('T', 365, 450);
-                ctx.fillText('Start Game', 280, 500);
+                ctx.fillText('Press Enter', 290, 460);
+                ctx.fillText('T', 370, 510);
+                ctx.fillText('Start Game', 290, 560);
                 ball.draw();
-            } else if (lvlOnePassed == false && gameStarted == true) {
-                ctx.fillText('Press Enter To Restart', canvas.width / 4.5, (canvas.height / 2) + 90);
-            }
-            //
-            else if((lvlOnePassed == true && gameStarted == true))
-            {
-                ctx.fillText('Press Enter To Continue', canvas.width / 5, (canvas.height / 2) + 90);
             }
         }
+
+
+
+
+
 
         //Resets the game to the begining state
         function ResetGameSetup() {
@@ -699,6 +714,15 @@
             bricksDestroyed = 0;
             init(); //set up everything again
         }
+
+
+
+
+
+
+
+
+
         //used for creating smooth panning left and right for the paddle/logImg
         function paddleLoop(highResTimestamp) {
 
@@ -718,6 +742,14 @@
         }
         paddleLoop();
     </script>
+
+
+
+
+
+
+
+
 
 
     <div>
