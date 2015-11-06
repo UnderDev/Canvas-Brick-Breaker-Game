@@ -53,15 +53,15 @@
         var rects = []; //array for all the rects(bricks)
         var heartsLeft = [];
         var keyState = {}; //holds the keys pressed
-        const BRICK_COUNT = 42;
-
+        var lvlOnePassed = false;
         var canvasBoarder = 150; //sets the Hight of the canvas for the ball
 
         var gameStarted = false,
             gameOver = false;
 
         var lifeLeft = 3,
-            bricksDestroyed = 0;
+            bricksDestroyed = 0,
+            userScore = 0;
 
         //load sound files and store in associated vars
         var bounceSound = new Audio("SoundClips/jumpSound.mp3"),
@@ -82,6 +82,14 @@
         hearts.src = 'images/heartImg.png';
 
 
+        window.addEventListener('click', function (e) {
+            var pos = {
+                x: e.pageX - canvas.offsetLeft,
+                y: e.pageY - canvas.offsetTop,
+            };
+            console.log(pos.x, pos.y)
+        }, false);
+
         //Event listeners for key-up and key-down events
         window.addEventListener('keydown', function (e) {
             keyState[e.keyCode || e.which] = true;
@@ -89,10 +97,11 @@
             //Strats the game on keyDown event "Enter"
             if (keyState[13] && gameStarted == false) {
                 console.log("ENTER GAME")
-                ctx.clearRect(100, 300, canvas.width, 500);
+                ctx.clearRect(275, 350, 300, 200); //clear the text off the screen
                 playGame();
             }
         }, true);
+
         window.addEventListener('keyup', function (e) {
             keyState[e.keyCode || e.which] = false;
         }, true);
@@ -142,6 +151,7 @@
             width: 50,
             hit: false,
             radius: 10,
+            totalNoBricks: 42,
             position: { //position of first block
                 x: 20,
                 y: 180
@@ -179,11 +189,12 @@
             createHearts();
 
             ball.draw(); //draw the ball
-            createBricks(); //Creates all the brick before the game starts
+            //createBricks(); //Creates all the brick before the game starts
+            createBricks();
 
             //if game isnt started show the text
             if (gameStarted == false)
-                gameText();
+                gameTextCheckWinLose();
 
             //Draws all the brick OBJS out to the screen
             for (var i in rects) {
@@ -193,16 +204,98 @@
 
         //Creates all the brick objects each with there own properities in a rects[] array
         function createBricks() {
-            for (var i = 0; i < BRICK_COUNT; i++) {
+            if (lvlOnePassed) {
+                Brick.totalNoBricks = 32;
+                Brick.position.x += 100;
+            }
+
+            for (var i = 0; i < Brick.totalNoBricks; i++) {
                 //setup all bricks to have x, y and hit valuse to false(not HIT)
                 rects[i] = new Brick.Setup(Brick.position.x, Brick.position.y, Brick.hit, Brick.width, Brick.height);
                 Brick.position.x += 55;
 
-                //if the bricks are > than the canvas.width than move down a line
-                if (Brick.position.x + Brick.width >= canvas.width) {
-                    Brick.position.y += 30;
-                    Brick.position.x = 20;
+                if (lvlOnePassed) {
+                    createBrickLvlTwo(i);
+                    console.log("2ND lvl");
                 }
+                //
+                else {
+                    //if the bricks are > than the canvas.width than move down a line and repeat
+                    if (Brick.position.x + Brick.width >= canvas.width) {
+                        Brick.position.y += 30;
+                        Brick.position.x = 20;
+                    }
+                }
+            }
+        }
+
+
+        function createBrickLvlTwo(brickNum) {
+            if (brickNum == 0) {
+                Brick.position.y += 30;
+                Brick.position.x = 90;
+            }
+            //
+            else if (brickNum == 2) {
+                Brick.position.y += 30;
+                Brick.position.x = 60;
+            }
+            //
+            else if (brickNum == 5) {
+                Brick.position.y += 30;
+                Brick.position.x = 30;
+            }
+            //
+            else if (brickNum == 9) {
+                Brick.position.y += 30;
+                Brick.position.x = 60;
+            } else if (brickNum == 12) {
+                Brick.position.y += 30;
+                Brick.position.x = 90;
+            }
+            //
+            else if (brickNum == 14) {
+                Brick.position.y += 30;
+                Brick.position.x = 120;
+            }
+            //
+            else if (brickNum == 15) {
+                Brick.position.y = 180;
+                Brick.position.x = 640;
+            }
+            //
+            if (brickNum == 16) {
+                Brick.position.y += 30;
+                Brick.position.x = 615;
+            }
+            //
+            else if (brickNum == 18) {
+                Brick.position.y += 30;
+                Brick.position.x = 585;
+            }
+            //
+            else if (brickNum == 21) {
+                Brick.position.y += 30;
+                Brick.position.x = 555;
+            }
+            //
+            else if (brickNum == 25) {
+                Brick.position.y += 30;
+                Brick.position.x = 585;
+            }
+            //
+            else if (brickNum == 28) {
+                Brick.position.y += 30;
+                Brick.position.x = 615;
+            }
+            //
+            else if (brickNum == 30) {
+                Brick.position.y += 30;
+                Brick.position.x = 640;
+            }
+            //
+            else if (brickNum == 31) {
+                Brick.position.y += 30;
             }
         }
 
@@ -388,8 +481,9 @@
                     rects[i].h = true;
 
                     //ADD 1 TO THE AMOUNT OF BRICKS DESTROYED
-                    bricksDestroyed++;
-
+                    bricksDestroyed++; //counts bricks destroyed, use for checking win/lose
+                    userScore++; //counts the users score
+                    console.log(userScore);
                     //if ball hit Bottom of the brick
                     if (ballsYBot >= rects[i].y + Brick.height && ballsYTop <= rects[i].y + Brick.height && ball.position.y > rects[i].y + Brick.height) {
                         console.log("Ball Hit Bottom Of Brick");
@@ -536,40 +630,45 @@
             ctx.fillStyle = 'white';
             ctx.fillText('Score: ', 10, canvas.height - 5);
             ctx.fillStyle = 'Gold';
-            ctx.fillText(bricksDestroyed, 85, canvas.height - 5);
+            ctx.fillText(userScore, 85, canvas.height - 5);
         }
 
         //Check if the game was won/lost or a life was lost
         function checkWinLose() {
-            //if ball didnt hit paddle and is less than a certian hight life was lost
+
+            //if ball didnt hit paddle and is less than a certain hight, a life is lost
             if ((ball.ballCollisionLocation != 1 || ball.ballCollisionLocation != 2 || ball.ballCollisionLocation != 3) && ball.position.y >= canvas.height - 10) {
                 lifeLostSound.play(); //play audio file
                 lifeLeft--;
                 heartsLeft.splice(lifeLeft, 1); //Remove a life from the array
                 resetBallLoc(); //reset the ball position
             }
+
             //if game was won or lost
-            if ((lifeLeft <= 0) || (bricksDestroyed == BRICK_COUNT)) {
-                gameText();
-                resetBallLoc();
+            if ((lifeLeft <= 0) || (bricksDestroyed == Brick.totalNoBricks)) {
+                gameTextCheckWinLose(); //display game text/ and swich lvl etc
+                resetBallLoc(); //reset ball
                 gameOver = true;
-                gameStarted = false;
+                gameStarted = false; //game resets
                 if (keyState[13]) { //if Enter key press reset game
-                    lifeLeft = 3;
+                    lifeLeft = 3; //reset lives on key press
                     ResetGameSetup();
                 }
             }
         }
 
         //Prints out the text to the screen based on winning/losing/start of game
-        function gameText() {
+        function gameTextCheckWinLose() {
             ctx.fillStyle = 'rgb(255,255,255)';
             ctx.font = "50px Times New Roman";
 
-            if (bricksDestroyed == BRICK_COUNT) {
+            if (bricksDestroyed == Brick.totalNoBricks) {
                 ctx.fillText('You Win!!', canvas.width / 2.8, canvas.height / 2 + 50);
                 winGameSound.play();
-            } else if (bricksDestroyed != BRICK_COUNT && gameStarted) {
+
+                lvlOnePassed = true; //current lvl was passed
+
+            } else if (bricksDestroyed != Brick.totalNoBricks && gameStarted) {
                 ctx.fillText('GAME OVER', canvas.width / 3.3, (canvas.height / 2) + 25);
                 loseGameSound.play();
             }
@@ -578,8 +677,14 @@
                 ctx.fillText('T', 365, 450);
                 ctx.fillText('Start Game', 280, 500);
                 ball.draw();
-            } else
+            } else if (lvlOnePassed == false && gameStarted) {
                 ctx.fillText('Press Enter To Restart', canvas.width / 4.5, (canvas.height / 2) + 90);
+            }
+            //
+            else {
+                ctx.fillText('Press Enter To Progess', canvas.width / 4.5, (canvas.height / 2) + 90);
+                ctx.fillText('To level Two ', canvas.width / 3, (canvas.height / 2) + 140);
+            }
         }
 
         //Resets the game to the begining state
@@ -591,6 +696,12 @@
             Brick.position.y = 180;
             bricksDestroyed = 0;
             init(); //set up everything again
+
+            if (lvlOnePassed == true) {
+                lvlOnePassed = false;
+                console.log("resetiing lvl");
+            }
+
         }
 
         //used for creating smooth panning left and right for the paddle/logImg
@@ -613,10 +724,11 @@
         paddleLoop();
     </script>
 
+
     <div>
         <h1>Instructions</h1>
         <p>
-            It was the start of warm sunny day when all of a sudden a cluster of bricks formed a wall blocking the sun from rising! Your mission is to destroy thoes pesky bricks and help the sun to rise.
+            It was the start of warm sunny day when all of a sudden a cluster of bricks formed a wall blocking the sun from rising! Your mission is to destroy thoes pesky bricks and help the sun to rise!!.
             <p>
                 To Destroy the bricks you will have to control the log at the bottom of the screen using the left/right arrows or the A/B keys, to keep the sun from setting below the grass.
             </p>
@@ -628,11 +740,11 @@
     <div>
         <h1>Controls</h1>
         <ul>
-            <li><b>Move Log Left:</b>  Push the A key or the Left arrow key</li>
-            <li><b>Move Log Right:</b>  Push the D key or the Right arrow key</li>
-            <p></p>
-            <li><b>Start The Game:</b>  Hit the Enter Key</li>
-            <li><b>Restart The Game:</b>  Hit the Enter Key after Winor Defeat</li>
+            <li><b>Move Log Left:</b> Push the A key or the Left arrow key</li>
+            <li><b>Move Log Right:</b> Push the D key or the Right arrow key</li>
+            <br></br>
+            <li><b>Start The Game:</b> Hit the Enter Key</li>
+            <li><b>Restart The Game:</b> Hit the Enter Key after Winor Defeat</li>
         </ul>
     </div>
 </body>
